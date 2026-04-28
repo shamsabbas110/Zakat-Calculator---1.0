@@ -1,0 +1,82 @@
+<svg width="100%" viewBox="0 0 690 690" role="img" xmlns="http://www.w3.org/2000/svg" style="">
+  <title style="fill:rgb(0, 0, 0);stroke:none;color:rgb(255, 255, 255);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto">Zakat Calculator Icon - Scale of Justice Concept</title>
+  <defs>
+    <linearGradient id="bg3" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#131418"/>
+      <stop offset="100%" stop-color="#0b0c0f"/>
+    </linearGradient>
+    <linearGradient id="scaleG" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#16e070"/>
+      <stop offset="100%" stop-color="#097a3c"/>
+    </linearGradient>
+    <linearGradient id="bowlG" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#0f5c34"/>
+      <stop offset="100%" stop-color="#062a18"/>
+    </linearGradient>
+    <linearGradient id="starG3" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#ffe066"/>
+      <stop offset="100%" stop-color="#d48000"/>
+    </linearGradient>
+    <linearGradient id="moonG" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#0e5c38"/>
+      <stop offset="100%" stop-color="#0a3a22"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="680" height="680" fill="url(#bg3)" style="stroke:none;color:rgb(255, 255, 255);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/>
+
+  <!-- Soft background glow -->
+  <circle cx="340" cy="300" r="210" fill="#0a2a18" opacity="0.35" style="fill:rgb(10, 42, 24);stroke:none;color:rgb(255, 255, 255);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:0.35;font-family:&quot;Anthropic Sans&quot;, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/>
+
+  <!-- ── BALANCE SCALE (Mizan — symbol of justice in Islam) ── -->
+
+  <!-- Center pole -->
+  <rect x="333" y="190" width="14" height="290" rx="7" fill="url(#scaleG)" style="stroke:none;color:rgb(255, 255, 255);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/>
+
+  <!-- Base platform -->
+  <rect x="268" y="478" width="144" height="14" rx="7" fill="url(#scaleG)" style="stroke:none;color:rgb(255, 255, 255);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/>
+  <rect x="300" y="492" width="80" height="8" rx="4" fill="#097a3c" opacity="0.6" style="fill:rgb(9, 122, 60);stroke:none;color:rgb(255, 255, 255);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:0.6;font-family:&quot;Anthropic Sans&quot;, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/>
+
+  <!-- Top pivot ornament -->
+  <circle cx="340" cy="195" r="18" fill="#0d1a12" stroke="url(#scaleG)" stroke-width="3.5" style="fill:rgb(13, 26, 18);color:rgb(255, 255, 255);stroke-width:3.5px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/>
+
+  <!-- Gold star at pivot -->
+  <polygon points="340,179 345,193 360,193 348,201 353,215 340,207 327,215 332,201 320,193 335,193" fill="url(#starG3)" stroke="#a06000" stroke-width="0.8" style="stroke:rgb(160, 96, 0);color:rgb(255, 255, 255);stroke-width:0.8px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/>
+
+  <!-- Scale beam (slightly tilted left = more giving) -->
+  <line x1="168" y1="258" x2="512" y2="268" stroke="url(#scaleG)" stroke-width="7" stroke-linecap="round" style="fill:rgb(0, 0, 0);color:rgb(255, 255, 255);stroke-width:7px;stroke-linecap:round;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/>
+
+  <!-- Left chain -->
+  <line x1="192" y1="260" x2="178" y2="330" stroke="#12a857" stroke-width="3.5" stroke-linecap="round" stroke-dasharray="6 4" style="fill:rgb(0, 0, 0);stroke:rgb(18, 168, 87);color:rgb(255, 255, 255);stroke-width:3.5px;stroke-dasharray:6px, 4px;stroke-linecap:round;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/>
+  <!-- Right chain -->
+  <line x1="488" y1="266" x2="496" y2="330" stroke="#12a857" stroke-width="3.5" stroke-linecap="round" stroke-dasharray="6 4" style="fill:rgb(0, 0, 0);stroke:rgb(18, 168, 87);color:rgb(255, 255, 255);stroke-width:3.5px;stroke-dasharray:6px, 4px;stroke-linecap:round;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/>
+
+  <!-- Left bowl (lower = heavier = more zakat given) -->
+  <path d="M 140 330 Q 178 390 216 330 Z" fill="url(#bowlG)" stroke="#16c060" stroke-width="3" style="stroke:rgb(22, 192, 96);color:rgb(255, 255, 255);stroke-width:3px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/>
+  <!-- Left bowl rim -->
+  <line x1="140" y1="330" x2="216" y2="330" stroke="#16c060" stroke-width="3" stroke-linecap="round" style="fill:rgb(0, 0, 0);stroke:rgb(22, 192, 96);color:rgb(255, 255, 255);stroke-width:3px;stroke-linecap:round;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/>
+  <!-- Percent symbol in left bowl -->
+  <circle cx="166" cy="346" r="7" fill="none" stroke="#1dd470" stroke-width="2.5" style="fill:none;stroke:rgb(29, 212, 112);color:rgb(255, 255, 255);stroke-width:2.5px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/>
+  <circle cx="190" cy="366" r="7" fill="none" stroke="#1dd470" stroke-width="2.5" style="fill:none;stroke:rgb(29, 212, 112);color:rgb(255, 255, 255);stroke-width:2.5px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/>
+  <line x1="160" y1="373" x2="196" y2="339" stroke="#1dd470" stroke-width="2.5" stroke-linecap="round" style="fill:rgb(0, 0, 0);stroke:rgb(29, 212, 112);color:rgb(255, 255, 255);stroke-width:2.5px;stroke-linecap:round;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/>
+
+  <!-- Right bowl (higher = lighter) -->
+  <path d="M 464 330 Q 496 376 528 330 Z" fill="url(#bowlG)" stroke="#16c060" stroke-width="3" style="stroke:rgb(22, 192, 96);color:rgb(255, 255, 255);stroke-width:3px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/>
+  <line x1="464" y1="330" x2="528" y2="330" stroke="#16c060" stroke-width="3" stroke-linecap="round" style="fill:rgb(0, 0, 0);stroke:rgb(22, 192, 96);color:rgb(255, 255, 255);stroke-width:3px;stroke-linecap:round;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/>
+  <!-- Heart/charity symbol in right bowl -->
+  <path d="M 496 344 Q 490 336 482 341 Q 478 350 496 362 Q 514 350 510 341 Q 502 336 496 344 Z" fill="#16c060" opacity="0.85" style="fill:rgb(22, 192, 96);stroke:none;color:rgb(255, 255, 255);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:0.85;font-family:&quot;Anthropic Sans&quot;, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/>
+
+  <!-- Crescent moon — top right, decorative -->
+  <path d="M 490 130 A 52 52 0 1 1 432 188 A 36 36 0 1 0 490 130 Z" fill="url(#moonG)" style="stroke:none;color:rgb(255, 255, 255);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/>
+  <!-- Moon star -->
+  <polygon points="510,118 513,128 524,128 515,134 518,144 510,138 502,144 505,134 496,128 507,128" fill="url(#starG3)" stroke="#a06000" stroke-width="0.5" style="stroke:rgb(160, 96, 0);color:rgb(255, 255, 255);stroke-width:0.5px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/>
+
+  <!-- Small upward arrow on center pole (growth) -->
+  <polygon points="340,165 326,192 354,192" fill="#1add72" opacity="0.9" style="fill:rgb(26, 221, 114);stroke:none;color:rgb(255, 255, 255);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:0.9;font-family:&quot;Anthropic Sans&quot;, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/>
+
+  <!-- Subtle tick marks on beam -->
+  <line x1="340" y1="252" x2="340" y2="244" stroke="#16c060" stroke-width="2" opacity="0.5" style="fill:rgb(0, 0, 0);stroke:rgb(22, 192, 96);color:rgb(255, 255, 255);stroke-width:2px;stroke-linecap:butt;stroke-linejoin:miter;opacity:0.5;font-family:&quot;Anthropic Sans&quot;, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/>
+  <line x1="300" y1="252" x2="300" y2="248" stroke="#16c060" stroke-width="1.5" opacity="0.3" style="fill:rgb(0, 0, 0);stroke:rgb(22, 192, 96);color:rgb(255, 255, 255);stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;opacity:0.3;font-family:&quot;Anthropic Sans&quot;, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/>
+  <line x1="380" y1="254" x2="380" y2="250" stroke="#16c060" stroke-width="1.5" opacity="0.3" style="fill:rgb(0, 0, 0);stroke:rgb(22, 192, 96);color:rgb(255, 255, 255);stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;opacity:0.3;font-family:&quot;Anthropic Sans&quot;, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/>
+
+</svg>

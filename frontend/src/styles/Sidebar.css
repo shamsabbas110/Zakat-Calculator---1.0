@@ -1,0 +1,84 @@
+/* ── SIDEBAR matching wireframe: dark bg, bordered nav cards ── */
+
+.sidebar {
+  width: 240px;
+  min-height: 100vh;
+  background: #0d0d0d;
+  display: flex;
+  flex-direction: column;
+  padding: 1.5rem 1rem;
+  border-right: 1px solid rgba(255,255,255,0.08);
+  gap: 0.75rem;
+  flex-shrink: 0;
+  position: sticky;
+  top: 0;
+}
+
+/* LOGO row */
+.sidebar-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.25rem 0.5rem 1.25rem;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+  margin-bottom: 0.5rem;
+}
+
+.sidebar-brand h2 {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: #fff;
+  letter-spacing: -0.02em;
+  margin: 0;
+}
+
+/* Nav container */
+.sidebar-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  flex: 1;
+}
+
+/* Each nav item — looks like a bordered card (as in wireframe) */
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem 1.1rem;
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,0.12);
+  background: #141414;
+  color: #9ca3af;
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 0.9rem;
+  transition: border-color 0.2s, color 0.2s, background 0.2s;
+}
+
+.nav-item:hover {
+  border-color: rgba(255,255,255,0.35);
+  color: #fff;
+  background: #1a1a1a;
+}
+
+/* Active — white border highlight matching wireframe */
+.nav-item.active {
+  border-color: rgba(255,255,255,0.6);
+  color: #ffffff;
+  background: #1e1e1e;
+  font-weight: 600;
+}
+
+/* Footer dot / tagline */
+.sidebar-footer {
+  padding: 0.75rem 0.5rem 0;
+  border-top: 1px solid rgba(255,255,255,0.06);
+  text-align: center;
+}
+
+.footer-text {
+  font-size: 0.75rem;
+  color: #4b5563;
+  line-height: 1.5;
+}

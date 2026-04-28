@@ -1,0 +1,165 @@
+.form-page-container {
+  max-width: 680px;
+  margin: 0 auto;
+  animation: fadeUp 0.4s ease-out both;
+}
+
+.form-header {
+  margin-bottom: 2rem;
+  text-align: center;
+}
+
+.form-header h1 {
+  font-size: 2rem;
+  font-weight: 800;
+  color: #ffffff;
+  margin-bottom: 0.4rem;
+  letter-spacing: -0.02em;
+}
+
+.form-header p {
+  font-size: 0.95rem;
+  color: #6b7280;
+}
+
+/* Card wrapping the form */
+.form-card {
+  background: #141414;
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 18px;
+  padding: 2.5rem;
+}
+
+/* Two-column input row */
+.input-row {
+  display: flex;
+  gap: 1.25rem;
+  flex-wrap: wrap;
+}
+
+.input-row .half {
+  flex: 1;
+  min-width: 180px;
+}
+
+.w-full { width: 100%; }
+.mt-4   { margin-top: 1rem; }
+.mt-6   { margin-top: 1.75rem; }
+
+/* ── RESULT BOX ── */
+.result-box {
+  background: #1a1a1a;
+  border: 1px solid rgba(255,255,255,0.1);
+  border-top: 2px solid #f59e0b;
+  border-radius: 14px;
+  padding: 2rem;
+  text-align: center;
+  animation: fadeUp 0.4s ease-out both;
+}
+
+.result-box h3 {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: #f59e0b;
+  margin-bottom: 0.6rem;
+}
+
+.result-amount {
+  font-size: 3.25rem;
+  font-weight: 900;
+  color: #ffffff;
+  letter-spacing: -0.03em;
+  margin-bottom: 0.5rem;
+  line-height: 1;
+}
+
+.result-note {
+  font-size: 0.82rem;
+  color: #6b7280;
+  margin: 0;
+}
+
+/* ── INFO BOX (warning) ── */
+.info-box {
+  background: rgba(245, 158, 11, 0.07);
+  border-left: 3px solid #f59e0b;
+  padding: 1rem 1.25rem;
+  border-radius: 0 12px 12px 0;
+  margin-bottom: 1.5rem;
+}
+
+.info-box p { color: #fcd34d; font-size: 0.875rem; margin: 0; }
+
+/* ── ANIMATION ── */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── FIELD HINT (small text below an input) ── */
+.field-hint {
+  font-size: 0.76rem;
+  color: #4b5563;
+  margin-top: 0.35rem;
+  display: block;
+  line-height: 1.5;
+}
+
+/* ── ERROR BANNER ── */
+.form-error-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+  background: rgba(239, 68, 68, 0.08);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  border-left: 3px solid #ef4444;
+  border-radius: 0 10px 10px 0;
+  padding: 0.85rem 1rem;
+  color: #fca5a5;
+  font-size: 0.875rem;
+  margin-top: 1.25rem;
+}
+
+/* ── SUCCESS BANNER (next due date) ── */
+.form-success-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.85rem;
+  background: rgba(16, 185, 129, 0.07);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  border-radius: 12px;
+  padding: 1rem 1.25rem;
+  margin-top: 1.25rem;
+  animation: fadeUp 0.35s ease-out both;
+}
+
+.form-success-banner strong {
+  display: block;
+  font-size: 0.88rem;
+  color: #10b981;
+  margin-bottom: 0.3rem;
+}
+
+.form-success-banner p {
+  font-size: 0.83rem;
+  color: #9ca3af;
+  margin: 0;
+  line-height: 1.55;
+}
+
+/* Gold highlighted text inside banners */
+.highlight-gold {
+  color: #f59e0b;
+  font-weight: 700;
+}
+
+/* ── BOTTOM NAV BUTTONS ── */
+.form-nav {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: 0.5rem;
+  flex-wrap: wrap;
+}

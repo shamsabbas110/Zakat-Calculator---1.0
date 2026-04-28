@@ -1,0 +1,590 @@
+/* ══════════════════════════════════════════════════════════════
+   TIME-TRAVEL PAST ZAKAT WIZARD  —  Pure CSS, no Tailwind
+   Dark premium aesthetic, solid colors only, no gradients
+   ══════════════════════════════════════════════════════════════ */
+
+/* ── PAGE WRAPPER ── */
+.wizard {
+  max-width: 740px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  padding-bottom: 2rem;
+}
+
+/* ── PAGE HEADER ── */
+.wizard__header {
+  margin-bottom: 0.25rem;
+}
+
+.wizard__title {
+  font-size: clamp(1.6rem, 3.5vw, 2.25rem);
+  font-weight: 900;
+  color: #ffffff;
+  letter-spacing: -0.03em;
+  margin-bottom: 0.4rem;
+}
+
+.wizard__sub {
+  font-size: 0.9rem;
+  color: #6b7280;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   STEP PROGRESS INDICATOR
+   ══════════════════════════════════════════════════════════════ */
+.wizard__progress {
+  display: flex;
+  align-items: center;
+  gap: 0;
+}
+
+.wizard__prog-step {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-shrink: 0;
+}
+
+.wizard__prog-num {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 2px solid #2d2d2d;
+  background: #141414;
+  color: #6b7280;
+  font-size: 0.8rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.25s;
+}
+
+.wizard__prog-label {
+  font-size: 0.8rem;
+  color: #6b7280;
+  white-space: nowrap;
+  transition: color 0.25s;
+}
+
+/* Active step */
+.wizard__prog-step.active .wizard__prog-num {
+  border-color: #f59e0b;
+  background: #f59e0b;
+  color: #000000;
+}
+.wizard__prog-step.active .wizard__prog-label { color: #ffffff; }
+
+/* Completed step */
+.wizard__prog-step.done .wizard__prog-num {
+  border-color: #10b981;
+  background: #10b981;
+  color: #000000;
+}
+.wizard__prog-step.done .wizard__prog-label { color: #10b981; }
+
+/* Connector line between steps */
+.wizard__prog-line {
+  flex: 1;
+  height: 2px;
+  background: #2d2d2d;
+  margin: 0 0.75rem;
+  transition: background 0.3s;
+}
+.wizard__prog-line.done { background: #10b981; }
+
+/* ══════════════════════════════════════════════════════════════
+   ERROR BANNER
+   ══════════════════════════════════════════════════════════════ */
+.wizard__error-banner {
+  background: #1f0000;
+  border: 1px solid #7f1d1d;
+  border-left: 3px solid #ef4444;
+  border-radius: 10px;
+  padding: 0.875rem 1.1rem;
+  color: #fca5a5;
+  font-size: 0.875rem;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   STEP 1 — DATE CARD
+   ══════════════════════════════════════════════════════════════ */
+.wizard__card {
+  background: #141414;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 18px;
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.wizard__card-title {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #ffffff;
+  margin: 0;
+}
+
+.wizard__card-desc {
+  font-size: 0.875rem;
+  color: #6b7280;
+  margin: 0;
+  line-height: 1.65;
+}
+
+/* Loading spinner row inside button */
+.wizard__loading-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+.wizard__spinner {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(0,0,0,0.3);
+  border-top-color: #000;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  flex-shrink: 0;
+}
+
+/* Nisab info box */
+.wizard__info-box {
+  background: rgba(245, 158, 11, 0.07);
+  border: 1px solid rgba(245, 158, 11, 0.2);
+  border-left: 3px solid #f59e0b;
+  border-radius: 0 10px 10px 0;
+  padding: 1rem 1.1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.wizard__info-title {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #f59e0b;
+  margin: 0;
+}
+
+.wizard__info-box p {
+  font-size: 0.82rem;
+  color: #9ca3af;
+  margin: 0;
+  line-height: 1.6;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   STEP 2 — NOTICE BANNER
+   ══════════════════════════════════════════════════════════════ */
+.wizard__notice {
+  background: rgba(139, 92, 246, 0.08);
+  border: 1px solid rgba(139, 92, 246, 0.25);
+  border-left: 3px solid #8b5cf6;
+  border-radius: 0 12px 12px 0;
+  padding: 1.1rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.wizard__notice strong {
+  font-size: 0.85rem;
+  color: #c4b5fd;
+}
+
+.wizard__notice p {
+  font-size: 0.82rem;
+  color: #9ca3af;
+  margin: 0;
+  line-height: 1.6;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   VERTICAL TIMELINE
+   ══════════════════════════════════════════════════════════════ */
+.wizard__timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 0; /* connector lines handle the spacing */
+}
+
+/* Single year entry */
+.wizard__year-card {
+  display: flex;
+  gap: 1.25rem;
+  animation: fadeUp 0.35s ease-out both;
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Paused year dims the card */
+.wizard__year-card--paused .wizard__year-body {
+  opacity: 0.65;
+}
+
+/* ── CONNECTOR (left side dot + line) ── */
+.wizard__connector {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex-shrink: 0;
+  width: 20px;
+  padding-top: 1.5rem;
+}
+
+.wizard__conn-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #f59e0b;
+  border: 2px solid #0d0d0d;
+  flex-shrink: 0;
+  z-index: 1;
+}
+
+.wizard__conn-dot.paused {
+  background: #6b7280;
+}
+
+.wizard__conn-line {
+  flex: 1;
+  width: 2px;
+  background: #2d2d2d;
+  margin: 4px 0;
+  min-height: 24px;
+}
+
+/* ── CARD BODY (right side) ── */
+.wizard__year-body {
+  flex: 1;
+  background: #141414;
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 14px;
+  padding: 1.25rem 1.4rem;
+  margin-bottom: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  transition: border-color 0.2s;
+}
+
+.wizard__year-body:hover {
+  border-color: rgba(255,255,255,0.18);
+}
+
+/* Year header row */
+.wizard__year-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+.wizard__year-badge {
+  display: inline-block;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: #f59e0b;
+  background: rgba(245, 158, 11, 0.1);
+  padding: 0.2rem 0.6rem;
+  border-radius: 999px;
+}
+
+/* Row that holds both the year badge and the optional Current Year badge */
+.wizard__badge-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.4rem;
+}
+
+/* "Current Year" highlighted badge — only appears on the last card */
+.wizard__current-badge {
+  display: inline-block;
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #10b981;
+  background: rgba(16, 185, 129, 0.12);
+  border: 1px solid rgba(16, 185, 129, 0.35);
+  padding: 0.2rem 0.65rem;
+  border-radius: 999px;
+}
+
+.wizard__year-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #ffffff;
+  margin: 0 0 0.2rem 0;
+}
+
+.wizard__year-greg {
+  font-size: 0.8rem;
+  color: #6b7280;
+  margin: 0;
+}
+
+/* "Paused" tag */
+.wizard__paused-tag {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #6b7280;
+  background: rgba(107,114,128,0.15);
+  border: 1px solid rgba(107,114,128,0.3);
+  padding: 0.25rem 0.65rem;
+  border-radius: 999px;
+  flex-shrink: 0;
+}
+
+/* ── RUPEE INPUT ── */
+.wizard__rupee-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.wizard__rupee-sym {
+  position: absolute;
+  left: 0.9rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #6b7280;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.wizard__rupee-field {
+  padding-left: 2rem !important; /* shift text right past ₹ */
+}
+
+/* ── TOGGLE SWITCH ── */
+.wizard__toggle {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.85rem;
+  cursor: pointer;
+}
+
+.wizard__toggle-track {
+  position: relative;
+  width: 40px;
+  height: 22px;
+  border-radius: 999px;
+  background: #2d2d2d;
+  border: 1px solid #3d3d3d;
+  flex-shrink: 0;
+  transition: background 0.2s, border-color 0.2s;
+  margin-top: 2px;
+}
+
+/* Checked state */
+.wizard__toggle-track[data-checked="true"] {
+  background: #f59e0b;
+  border-color: #f59e0b;
+}
+
+.wizard__toggle-input {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.wizard__toggle-thumb {
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #ffffff;
+  top: 2px;
+  left: 2px;
+  transition: transform 0.2s;
+}
+
+.wizard__toggle-track[data-checked="true"] .wizard__toggle-thumb {
+  transform: translateX(18px);
+}
+
+.wizard__toggle-text {
+  font-size: 0.82rem;
+  color: #9ca3af;
+  line-height: 1.5;
+}
+
+/* ── ZAKAT PREVIEW ── */
+.wizard__preview {
+  font-size: 0.85rem;
+  color: #9ca3af;
+  background: rgba(16, 185, 129, 0.07);
+  border: 1px solid rgba(16, 185, 129, 0.2);
+  border-radius: 8px;
+  padding: 0.6rem 0.9rem;
+}
+
+.wizard__preview strong {
+  color: #10b981;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   STEP 2 — NAVIGATION BUTTONS
+   ══════════════════════════════════════════════════════════════ */
+.wizard__nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 0.5rem;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   STEP 3 — RESULTS
+   ══════════════════════════════════════════════════════════════ */
+.wizard__results {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+/* ── DB SAVE STATUS BANNER ── */
+.wizard__db-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  border-radius: 12px;
+  padding: 1rem 1.25rem;
+  border: 1px solid;
+}
+
+/* Success — saved to MongoDB */
+.wizard__db-banner--success {
+  background: rgba(16, 185, 129, 0.08);
+  border-color: rgba(16, 185, 129, 0.35);
+}
+.wizard__db-banner--success strong { color: #10b981; }
+.wizard__db-banner--success p      { color: #6ee7b7; font-size: 0.82rem; margin: 0.2rem 0 0 0; }
+
+/* Fallback — saved to localStorage only */
+.wizard__db-banner--local {
+  background: rgba(245, 158, 11, 0.07);
+  border-color: rgba(245, 158, 11, 0.3);
+}
+.wizard__db-banner--local strong { color: #f59e0b; }
+.wizard__db-banner--local p      { color: #fcd34d; font-size: 0.82rem; margin: 0.2rem 0 0 0; }
+
+.wizard__db-icon {
+  font-size: 1.1rem;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+/* Hero total */
+.wizard__result-hero {
+  background: #141414;
+  border: 1px solid rgba(245, 158, 11, 0.3);
+  border-top: 3px solid #f59e0b;
+  border-radius: 18px;
+  padding: 2rem;
+  text-align: center;
+}
+
+.wizard__result-label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: #f59e0b;
+  margin-bottom: 0.5rem;
+}
+
+.wizard__result-amount {
+  font-size: 3.25rem;
+  font-weight: 900;
+  color: #ffffff;
+  letter-spacing: -0.03em;
+  line-height: 1;
+  margin-bottom: 0.5rem;
+}
+
+.wizard__result-sub {
+  font-size: 0.85rem;
+  color: #6b7280;
+}
+
+/* Breakdown list */
+.wizard__breakdown {
+  background: #141414;
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 16px;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.wizard__breakdown-title {
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #6b7280;
+  margin: 0 0 0.5rem 0;
+}
+
+.wizard__breakdown-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+
+.wizard__breakdown-row:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.wizard__breakdown-year {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #e5e7eb;
+  margin: 0 0 0.15rem 0;
+}
+
+.wizard__breakdown-greg {
+  font-size: 0.78rem;
+  color: #6b7280;
+  margin: 0 0 0.2rem 0;
+}
+
+.wizard__breakdown-wealth {
+  font-size: 0.78rem;
+  color: #9ca3af;
+  margin: 0;
+}
+
+.wizard__breakdown-zakat {
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.wizard__zakat-due {
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: #f59e0b;
+}

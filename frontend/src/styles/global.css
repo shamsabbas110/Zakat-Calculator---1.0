@@ -1,0 +1,204 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+:root {
+  --bg-root:    #0d0d0d;   /* page background */
+  --bg-card:    #141414;   /* card fill */
+  --bg-card2:   #1a1a1a;   /* nested card */
+  --border:     rgba(255,255,255,0.15);
+  --border-active: rgba(255,255,255,0.55);
+  --text-main:  #ffffff;
+  --text-sub:   #9ca3af;
+  --text-muted: #6b7280;
+  --gold:       #f59e0b;
+  --emerald:    #10b981;
+  --radius-xl:  18px;
+  --radius-lg:  14px;
+  --radius-md:  10px;
+  --radius-pill:999px;
+}
+
+/* ══════════════════════════════════════════
+   DEFINITIVE VIEWPORT LOCK
+   Chain: html → body → #root → .app-container
+   Every link must be 100vh + overflow:hidden
+   so the page-level scroll is physically impossible.
+   ══════════════════════════════════════════ */
+
+html,
+body {
+  height: 100vh;              /* exact viewport height — never taller */
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;           /* kill body-level scroll completely */
+  box-sizing: border-box;
+  font-family: 'Inter', sans-serif;
+  background-color: var(--bg-root);
+  color: var(--text-main);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Vite mounts React inside #root — must also be locked */
+#root {
+  height: 100vh;
+  width: 100%;
+  overflow: hidden;           /* #root must NOT scroll either */
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;                  /* kill ALL default browser margins */
+  padding: 0;
+}
+
+/* Headings: browsers add default margin-top — kill it */
+h1, h2, h3, h4, h5, h6 {
+  margin: 0;
+  padding: 0;
+  line-height: 1.15;
+}
+
+/* Paragraphs: no stray margin */
+p {
+  margin: 0;
+  line-height: 1.6;
+}
+
+/* ── APP SHELL ── */
+/* Must match #root exactly — the true outermost flex container */
+.app-container {
+  display: flex;
+  height: 100vh;              /* fixed to viewport */
+  width: 100%;
+  overflow: hidden;           /* shell never scrolls */
+}
+
+/* ── MAIN CONTENT ── */
+/* The ONE and ONLY scroll zone in the entire app */
+.main-content {
+  flex: 1;
+  height: 100%;               /* fill the shell vertically */
+  padding: 2rem;
+  overflow-y: auto;           /* scroll ONLY here */
+  overflow-x: hidden;
+  min-width: 0;               /* prevent flex child from overflowing */
+  display: flex;
+  flex-direction: column;
+
+  /* Hide the scrollbar track — scroll still works via mouse/touch */
+  scrollbar-width: none;          /* Firefox */
+  -ms-overflow-style: none;       /* IE / Edge */
+}
+.main-content::-webkit-scrollbar {
+  display: none;                  /* Chrome / Safari / Opera */
+}
+
+/* ── TYPOGRAPHY ── */
+h1, h2, h3, h4 { line-height: 1.15; }
+p { line-height: 1.6; }
+.text-gold    { color: var(--gold); }
+.text-emerald { color: var(--emerald); }
+
+/* ── BUTTONS ── */
+.btn-primary {
+  background-color: #ffffff;
+  color: #000000;
+  border: none;
+  padding: 0.6rem 1.4rem;
+  border-radius: var(--radius-pill);
+  font-weight: 600;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: opacity 0.2s, transform 0.15s;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+}
+.btn-primary:hover { opacity: 0.85; transform: translateY(-1px); }
+
+.btn-secondary {
+  background: transparent;
+  color: var(--text-main);
+  border: 1px solid var(--border);
+  padding: 0.6rem 1.4rem;
+  border-radius: var(--radius-pill);
+  font-weight: 500;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: background 0.2s;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+.btn-secondary:hover { background: rgba(255,255,255,0.06); }
+
+.btn-white {
+  background: #fff;
+  color: #000;
+  border: none;
+  padding: 0.55rem 1.2rem;
+  border-radius: var(--radius-pill);
+  font-weight: 600;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+.btn-white:hover { opacity: 0.85; }
+
+/* ── FORM INPUTS ── */
+.input-group {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 1.4rem;
+}
+.input-group label {
+  font-size: 0.825rem;
+  font-weight: 500;
+  color: var(--text-sub);
+  margin-bottom: 0.45rem;
+}
+.input-field {
+  background: var(--bg-card2);
+  border: 1px solid var(--border);
+  color: var(--text-main);
+  padding: 0.75rem 1rem;
+  border-radius: var(--radius-md);
+  font-size: 0.975rem;
+  font-family: 'Inter', sans-serif;
+  transition: border-color 0.2s;
+  width: 100%;
+}
+.input-field::placeholder { color: #555; }
+.input-field:focus {
+  outline: none;
+  border-color: var(--gold);
+}
+
+/* ── CARD (bordered box matching wireframe) ── */
+.wf-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+}
+
+/* ── UTILITIES ── */
+.w-full { width: 100%; }
+.mt-4   { margin-top: 1rem; }
+.mt-6   { margin-top: 1.5rem; }
+.half   { flex: 1; }
+
+/* ── FADE-UP ANIMATION ── */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.fade-up { animation: fadeUp 0.4s ease-out both; }
+
+/* ── SPIN ── */
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+.spinning { animation: spin 1s linear infinite; }

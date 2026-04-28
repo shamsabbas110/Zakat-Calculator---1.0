@@ -1,0 +1,94 @@
+/* ===== WIZARD STYLES ===== */
+
+.wizard-step {
+  animation: fadeUp 0.3s ease-out both;
+}
+
+/* Spinner animation for loading button */
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+.spinner {
+  animation: spin 1s linear infinite;
+}
+
+/* ===== YEAR LIST ===== */
+.years-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.875rem;
+  margin-bottom: 2rem;
+  max-height: 380px;
+  overflow-y: auto;
+  padding-right: 0.5rem;
+}
+
+/* Scrollbar */
+.years-list::-webkit-scrollbar       { width: 5px; }
+.years-list::-webkit-scrollbar-track { background: #1a1a1a; border-radius: 4px; }
+.years-list::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; }
+
+/* Each year row */
+.year-input-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.25rem;
+  background-color: #1a1a1a;
+  border: 1px solid #2d2d2d;
+  border-radius: var(--radius-md);
+  gap: 1rem;
+}
+
+.year-label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.year-label strong {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #ffffff;
+}
+
+.gregorian-hint {
+  font-size: 0.78rem;
+  color: #6b7280;
+}
+
+/* Input with ₹ prefix */
+.year-input {
+  position: relative;
+  width: 145px;
+  flex-shrink: 0;
+}
+
+.currency-symbol {
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #9ca3af;
+  font-weight: 600;
+  font-size: 0.9rem;
+  z-index: 10;
+}
+
+.year-input .input-field {
+  padding-left: 1.75rem; /* Room for ₹ symbol */
+  width: 100%;
+}
+
+/* ===== WIZARD NAVIGATION ===== */
+.wizard-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.text-center { text-align: center; }

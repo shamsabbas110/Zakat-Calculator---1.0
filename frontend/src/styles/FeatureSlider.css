@@ -1,0 +1,115 @@
+/* ── SWIPEABLE HORIZONTAL CARD SLIDER ── */
+
+/* Outer wrapper */
+.slider-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+/* Scrollable horizontal track */
+.slider-track {
+  display: flex;
+  gap: 1rem;
+  overflow-x: auto;
+  padding-bottom: 0.5rem;      /* room for scrollbar if needed */
+  
+  /* ── SCROLL SNAP ── */
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch; /* smooth on mobile */
+
+  /* ── HIDE SCROLLBAR (all browsers) ── */
+  scrollbar-width: none;           /* Firefox */
+  -ms-overflow-style: none;        /* IE / Edge */
+}
+.slider-track::-webkit-scrollbar {
+  display: none;                   /* Chrome / Safari / Opera */
+}
+
+/* ── INDIVIDUAL CARD ── */
+.slider-card {
+  /* Snap behaviour — each card snaps into start position */
+  scroll-snap-align: start;
+  flex: 0 0 240px;              /* fixed card width — doesn't grow/shrink */
+  
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 1.4rem 1.25rem;
+
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
+  transition: border-color 0.2s, transform 0.2s;
+
+  /* Top accent line using CSS variable passed from JSX */
+  border-top: 2px solid var(--card-accent, #f59e0b);
+}
+
+.slider-card:hover {
+  border-color: var(--card-accent, #f59e0b);
+  transform: translateY(-3px);
+}
+
+/* Icon circle */
+.slider-card__icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.05);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+/* Body text */
+.slider-card__body {
+  flex: 1;
+}
+
+.slider-card__title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #ffffff;
+  margin-bottom: 0.4rem;
+  line-height: 1.25;
+}
+
+.slider-card__desc {
+  font-size: 0.8rem;
+  color: #6b7280;
+  line-height: 1.5;
+  margin: 0;
+}
+
+/* Arrow at bottom-right */
+.slider-card__arrow {
+  display: flex;
+  justify-content: flex-end;
+}
+
+/* ── DOTS indicator below the slider ── */
+.slider-dots {
+  display: flex;
+  gap: 6px;
+  justify-content: center;
+  padding-top: 0.25rem;
+}
+
+.slider-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.2);
+}
+
+.slider-dot:first-child {
+  background: rgba(255,255,255,0.7);
+  width: 18px;
+  border-radius: 4px;
+}

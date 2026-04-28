@@ -1,0 +1,384 @@
+/* ══════════════════════════════════════════
+   DASHBOARD — Fixed, clean CSS Grid layout
+   ══════════════════════════════════════════ */
+
+/* ── Page wrapper ── */
+.dash {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  width: 100%;
+  max-width: 1080px;
+  margin: 0 auto;
+  padding-bottom: 0;
+  flex: 1;           /* fill the newly added flex container (.main-content) */
+  min-height: 0;     /* crucial for letting children shrink without overflowing */
+}
+
+/* ════════════════════════════════════════
+   NOTIFICATION BANNER  (Hawl due alert)
+   ════════════════════════════════════════ */
+.dash__notification {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.85rem;
+  background: rgba(239, 68, 68, 0.08);
+  border: 1px solid rgba(239, 68, 68, 0.4);
+  border-left: 3px solid #ef4444;
+  border-radius: 12px;
+  padding: 1rem 1.1rem;
+  color: #fca5a5;
+  font-size: 0.875rem;
+  line-height: 1.55;
+  animation: fadeUp 0.35s ease-out both;
+}
+
+.dash__notification p { flex: 1; margin: 0; }
+
+.dash__notif-close {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: #6b7280;
+  padding: 0;
+  flex-shrink: 0;
+  line-height: 1;
+  transition: color 0.2s;
+}
+.dash__notif-close:hover { color: #ffffff; }
+
+/* Section title row with inline nav button */
+.dash__section-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.1rem;
+}
+
+.dash__section-row .dash__section-title { margin-bottom: 0; }
+
+/* Small nav button inside history card */
+.dash__nav-btn {
+  background: transparent;
+  border: 1px solid rgba(255,255,255,0.12);
+  color: #9ca3af;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.3rem 0.75rem;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: border-color 0.2s, color 0.2s;
+}
+.dash__nav-btn:hover { border-color: #f59e0b; color: #f59e0b; }
+
+/* History item body (holds label + value, leaves room for delete btn) */
+.dash__history-body { flex: 1; min-width: 0; }
+
+/* "Due: June 2026" pill next to type label */
+.dash__due-badge {
+  display: inline-block;
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: #a78bfa;
+  background: rgba(167, 139, 250, 0.1);
+  border: 1px solid rgba(167, 139, 250, 0.25);
+  border-radius: 999px;
+  padding: 0.1rem 0.5rem;
+  margin-left: 0.5rem;
+  vertical-align: middle;
+}
+
+/* Trash / delete button on each history row */
+.dash__delete-btn {
+  background: transparent;
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 8px;
+  padding: 0.35rem 0.4rem;
+  cursor: pointer;
+  color: #6b7280;
+  flex-shrink: 0;
+  transition: background 0.2s, color 0.2s, border-color 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.dash__delete-btn:hover:not(:disabled) {
+  background: rgba(239,68,68,0.1);
+  border-color: rgba(239,68,68,0.4);
+  color: #ef4444;
+}
+.dash__delete-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+
+/* ════════════════════════════════════════
+   HERO HEADER
+   ════════════════════════════════════════ */
+.dash__hero {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.dash__heading {
+  font-size: clamp(2rem, 4.5vw, 3rem);
+  font-weight: 900;
+  color: #ffffff;
+  letter-spacing: -0.03em;
+  line-height: 1.05;
+  margin-bottom: 0.5rem;
+}
+
+.dash__sub {
+  font-size: 0.9rem;
+  color: #6b7280;
+  max-width: 360px;
+  margin: 0;
+}
+
+/* ════════════════════════════════════════
+   MAIN GRID — 3 equal columns
+   ════════════════════════════════════════ */
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+  width: 100%;
+  align-items: stretch;   /* all cells same height in each row */
+  flex: 1;                /* take remaining height */
+  min-height: 0;          /* crucial for letting children shrink without overflowing */
+}
+
+/* ════════════════════════════════════════
+   STAT CARDS  →  grid-column: span 1
+   ════════════════════════════════════════ */
+.stat-card {
+  grid-column: span 1;
+
+  background: #141414;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  padding: 1.5rem 1.25rem;
+
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+
+  transition: border-color 0.2s, transform 0.2s;
+}
+
+.stat-card:hover {
+  border-color: rgba(255, 255, 255, 0.28);
+  transform: translateY(-2px);
+}
+
+.stat-card__icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.05);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 0.25rem;
+}
+
+.stat-card__label {
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #6b7280;
+  margin: 0;
+}
+
+.stat-card__value {
+  font-size: 1.55rem;
+  font-weight: 800;
+  color: #ffffff;
+  margin: 0;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+}
+
+/* Slightly smaller font for the date card */
+.stat-card__value--sm {
+  font-size: 1.1rem;
+  letter-spacing: 0;
+}
+
+.stat-card__note {
+  font-size: 0.75rem;
+  color: #4b5563;
+  margin: 0;
+}
+
+/* ════════════════════════════════════════
+   RECENT CALCULATIONS  →  grid-column: span 2
+   ════════════════════════════════════════ */
+.dash__recent {
+  grid-column: span 2;
+
+  background: #141414;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  padding: 1.5rem;
+
+  /* Flex container so we can make the inner list scroll */
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.dash__section-title {
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #9ca3af;
+  margin: 0 0 1.1rem 0;
+}
+
+/* Loading */
+.dash__loading {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  color: #6b7280;
+  font-size: 0.875rem;
+}
+
+/* Empty state */
+.dash__empty {
+  font-size: 0.875rem;
+  color: #4b5563;
+  line-height: 1.75;
+}
+.dash__empty em {
+  color: #9ca3af;
+  font-style: normal;
+}
+
+/* History list */
+.dash__history-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.dash__history-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+}
+
+.dash__history-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #f59e0b;
+  margin-top: 5px;
+  flex-shrink: 0;
+}
+
+.dash__history-label {
+  font-size: 0.78rem;
+  color: #6b7280;
+  margin: 0 0 0.15rem 0;
+}
+
+.dash__history-value {
+  font-size: 0.95rem;
+  font-weight: 700;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.dash__history-date {
+  font-size: 0.76rem;
+  color: #4b5563;
+  font-weight: 400;
+}
+
+/* ════════════════════════════════════════
+   QUOTE CARD  →  grid-column: span 1
+   Image as background, dark overlay on top.
+   height: 100% so it matches Recent Calcs.
+   ════════════════════════════════════════ */
+.dash__quote-card {
+  grid-column: span 1;
+  height: 100%;          /* fills the grid row height */
+
+  border-radius: 16px;
+  overflow: hidden;      /* clips the bg image to the border-radius */
+
+  /* Image properties */
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+
+  /* Required for overlay positioning */
+  position: relative;
+}
+
+/* Dark gradient overlay — keeps text readable over any image */
+.dash__quote-overlay {
+  position: absolute;
+  inset: 0;                         /* covers the whole card */
+  background: linear-gradient(
+    rgba(0, 0, 0, 0.72),
+    rgba(0, 0, 0, 0.85)
+  );
+
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;        /* text sits at the bottom */
+  gap: 0.6rem;
+  padding: 1.5rem;
+}
+
+.dash__quote-text {
+  font-size: 0.88rem;
+  font-style: italic;
+  color: #e5e7eb;
+  line-height: 1.65;
+  margin: 0;
+}
+
+.dash__quote-source {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #f59e0b;
+  letter-spacing: 0.03em;
+}
+
+/* ════════════════════════════════════════
+   RESPONSIVE — stack to 1 col on mobile
+   ════════════════════════════════════════ */
+@media (max-width: 768px) {
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+  .dash__recent,
+  .dash__quote-card {
+    grid-column: span 1;
+  }
+}
+
+/* ════════════════════════════════════════
+   RECENT CALCULATIONS SCROLL FIX
+   ════════════════════════════════════════ */
+.recent-calculations-list {
+  max-height: 280px; /* Adjust this to fit perfectly within the card */
+  overflow-y: auto;
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+/* Hide the scrollbar visually */
+.recent-calculations-list::-webkit-scrollbar {
+  display: none; /* Chrome, Safari and Opera */
+}

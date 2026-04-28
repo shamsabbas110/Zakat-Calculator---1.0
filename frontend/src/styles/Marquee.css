@@ -1,0 +1,87 @@
+/* ══════════════════════════════════════════
+   INFINITE TEXT MARQUEE
+   ══════════════════════════════════════════
+
+   HOW THE SEAMLESS LOOP WORKS:
+   1. .marquee        → overflow: hidden  (clips the moving text)
+   2. .marquee__track → display: flex, contains TWO identical sets of items
+   3. @keyframes      → moves track from translateX(0) to translateX(-50%)
+   4. At -50% the second copy aligns perfectly with where the first started
+      → browser resets to 0 invisibly → perfectly seamless.
+   ══════════════════════════════════════════ */
+
+/* ── OUTER CONTAINER ── */
+.marquee {
+  overflow: hidden;
+  white-space: nowrap;
+  width: 100%;
+  padding: 0.85rem 0;    /* use padding NOT margin — contained by box-sizing */
+  margin: 0;             /* no margin at all — gap on .dash handles spacing */
+  background: #141414;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 14px;
+  flex-shrink: 0;        /* prevents the marquee from being squished in flex */
+  -webkit-mask-image: linear-gradient(
+    to right,
+    transparent 0%,
+    black 8%,
+    black 92%,
+    transparent 100%
+  );
+  mask-image: linear-gradient(
+    to right,
+    transparent 0%,
+    black 8%,
+    black 92%,
+    transparent 100%
+  );
+}
+
+/* ── SLIDING TRACK ── */
+.marquee__track {
+  display: inline-flex;      /* side-by-side, no wrap */
+  align-items: center;
+
+  /* The animation — moves left by 50% of total track width */
+  animation: marquee-slide 22s linear infinite;
+
+  /* Pause on hover for better UX */
+  will-change: transform;
+}
+
+.marquee:hover .marquee__track {
+  animation-play-state: paused;
+}
+
+/* ── EACH TEXT ITEM ── */
+.marquee__item {
+  display: inline-flex;
+  align-items: center;
+  gap: 1.25rem;
+
+  font-size: 1rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: #ffffff;
+
+  padding: 0 0.5rem;
+  flex-shrink: 0;            /* never wrap or shrink */
+}
+
+/* ── BULLET SEPARATOR ── */
+.marquee__dot {
+  color: #f59e0b;            /* gold bullet */
+  font-size: 1.1rem;
+  line-height: 1;
+}
+
+/* ══════════════════════════════════════════
+   @KEYFRAMES
+   Moves from 0 → -50% (= one full copy width).
+   Uses linear so speed is perfectly constant — no ease in/out.
+   ══════════════════════════════════════════ */
+@keyframes marquee-slide {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
