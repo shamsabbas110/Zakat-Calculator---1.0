@@ -7,7 +7,7 @@ const connectDB = async () => {
     // We use process.env.MONGO_URI to keep the connection string secret
     const conn = await mongoose.connect(process.env.MONGO_URI);
     
-    console.log(`MongoDB Connected: ${conn.connection.host}`);
+    console.log(`Connected to Database`);
   } catch (error) {
     // If there is an error, log it and exit the process
     console.error(`Error connecting to MongoDB: ${error.message}`);
