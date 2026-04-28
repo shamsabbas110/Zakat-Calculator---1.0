@@ -8,15 +8,8 @@ const app = express();
 // cors() allows the frontend to communicate with this backend API
 // Specifically configured for local React development
 app.use(cors({
-  origin: function (origin, callback) {
-    // Allow any localhost origin (5173, 5174, etc.) or no origin (like Postman)
-    if (!origin || origin.startsWith('http://localhost:')) {
-      callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS'));
-    }
-  },
-  methods: ['GET', 'POST', 'DELETE'],
+  origin: '*', // Allow all origins so Vercel can connect
+  methods: ['GET', 'POST', 'DELETE', 'PUT', 'PATCH'],
   credentials: true
 }));
 
