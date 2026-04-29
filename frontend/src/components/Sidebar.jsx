@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, Calculator, History, MoonStar } from 'lucide-react';
+import { LayoutDashboard, Calculator, History, MoonStar, User } from 'lucide-react';
 import '../styles/Sidebar.css';
 
 /**
@@ -42,6 +42,15 @@ export default function Sidebar() {
         >
           <History size={18} />
           <span>Find Past Zakat</span>
+        </NavLink>
+
+        <NavLink
+          to="/admin"
+          className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}
+          style={{ marginTop: 'auto' }}
+        >
+          <Calculator size={18} />
+          <span>Admin Panel</span>
         </NavLink>
       </nav>
 

@@ -110,8 +110,9 @@ p { line-height: 1.6; }
   font-size: 0.875rem;
   cursor: pointer;
   transition: opacity 0.2s, transform 0.15s;
-  display: inline-flex;
+  display: flex; /* Changed from inline-flex */
   align-items: center;
+  justify-content: center; /* PERFECT CENTERING */
   gap: 0.4rem;
   letter-spacing: 0.01em;
   white-space: nowrap;
@@ -128,8 +129,9 @@ p { line-height: 1.6; }
   font-size: 0.875rem;
   cursor: pointer;
   transition: background 0.2s;
-  display: inline-flex;
+  display: flex; /* Changed from inline-flex */
   align-items: center;
+  justify-content: center; /* PERFECT CENTERING */
   gap: 0.4rem;
 }
 .btn-secondary:hover { background: rgba(255,255,255,0.06); }

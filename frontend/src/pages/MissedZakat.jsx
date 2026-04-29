@@ -1,490 +1,356 @@
 import React, { useState } from 'react';
-import { gregorianToHijri, hijriToGregorian, getCurrentHijriYear, submitPastZakat } from '../services/api';
-import '../styles/MissedZakat.css';
+import { 
+  History, 
+  CheckCircle2, 
+  AlertTriangle,
+  Loader2,
+  TrendingUp,
+  Calendar,
+  Wallet,
+  ArrowRight,
+  ArrowLeft,
+  Coins,
+  ShieldCheck
+} from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import API from '../services/api';
 
-/**
- * MissedZakat — Time-Travel Past Zakat Wizard
- *
- * FLOW:
- *  Step 1 → User picks the Gregorian date wealth first hit Nisab
- *  Step 2 → API converts it to Hijri; we loop through each anniversary
- *           year and let the user enter their wealth for that date
- *  Step 3 → Results: total missed Zakat + yearly breakdown
- */
+// Helper to force English numerals (scrub any Arabic/Urdu digits)
+const forceEnglishNumerals = (str) => {
+  if (!str) return '';
+  const map = {
+    '٠': '0', '١': '1', '٢': '2', '٣': '3', '٤': '4',
+    '٥': '5', '٦': '6', '٧': '7', '٨': '8', '٩': '9'
+  };
+  return str.replace(/[٠-٩]/g, (d) => map[d]);
+};
+
 export default function MissedZakat() {
+  const navigate = useNavigate();
 
-  /* ── STEP STATE ── */
-  const [step, setStep] = useState(1);          // 1 | 2 | 3
+  // --- STATE ---
+  const [step, setStep] = useState('setup'); 
+  const [yearsCount, setYearsCount] = useState(1);
+  const [startDate, setStartDate] = useState('');
+  const [wealthArray, setWealthArray] = useState([{ cash: '', goldGm: '', silverGm: '' }]);
+  const [yearDates, setYearDates] = useState([]); 
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [result, setResult] = useState(null);
+  
+  // Accumulated history for multi-part journeys
+  const [accumulatedZakat, setAccumulatedZakat] = useState(0);
+  const [pastBreakdowns, setPastBreakdowns] = useState([]);
 
-  /* ── STEP 1 STATE ── */
-  const [nisabDate, setNisabDate]   = useState(''); // HTML date input = "YYYY-MM-DD"
-  const [loading, setLoading]       = useState(false);
-  const [error, setError]           = useState('');
-
-  /* ── STEP 2 STATE ── */
-  // Array of yearly cards generated after API calls
-  const [yearCards, setYearCards] = useState([]);
-
-  /* ── STEP 3 STATE ── */
-  const [submitting, setSubmitting] = useState(false);
-  const [result, setResult]         = useState(null);
-
-  /* ═══════════════════════════════════════════════
-     HELPER: convert "YYYY-MM-DD" → "DD-MM-YYYY"
-     (AlAdhan API expects DD-MM-YYYY format)
-  ═══════════════════════════════════════════════ */
-  const toApiFormat = (isoDate) => {
-    const [yyyy, mm, dd] = isoDate.split('-');
-    return `${dd}-${mm}-${yyyy}`;
+  // --- HANDLERS ---
+  const handleYearsChange = (e) => {
+    const count = parseInt(e.target.value);
+    setYearsCount(count);
+    const newArray = [...wealthArray];
+    if (count > wealthArray.length) {
+      for (let i = wealthArray.length; i < count; i++) {
+        newArray.push({ cash: '', goldGm: '', silverGm: '' });
+      }
+    } else {
+      newArray.length = count;
+    }
+    setWealthArray(newArray);
   };
 
-  /* ═══════════════════════════════════════════════
-     STEP 1 → STEP 2
-     1. Convert the user's Gregorian date to Hijri.
-     2. Get the current Hijri year.
-     3. For every Hijri anniversary (year+1, year+2 …),
-        call hToG to find the approx Gregorian equivalent.
-     4. Build the yearCards array.
-  ═══════════════════════════════════════════════ */
-  const handleStartJourney = async (e) => {
-    e.preventDefault();
-    if (!nisabDate) return;
+  const handleFieldChange = (index, field, value) => {
+    setWealthArray(prev => {
+      const newArray = [...prev];
+      if (!newArray[index]) {
+        newArray[index] = { cash: '', goldGm: '', silverGm: '' };
+      }
+      newArray[index] = { ...newArray[index], [field]: value };
+      return newArray;
+    });
+  };
 
+  const fetchDates = async (countOverride = null) => {
+    if (!startDate) return;
+    const finalCount = countOverride !== null ? countOverride : yearsCount;
     setLoading(true);
     setError('');
-
     try {
-      /* ── API CALL 1: Gregorian → Hijri ── */
-      const apiDate  = toApiFormat(nisabDate);
-      const startH   = await gregorianToHijri(apiDate);
-      const startYear = parseInt(startH.year, 10);
-
-      /* ── API CALL 2: Get current Hijri year ── */
-      const currentHijriYear = await getCurrentHijriYear();
-
-      const yearsCount = currentHijriYear - startYear;
-      if (yearsCount < 0) {
-        setError('The selected date must be in the past. Please choose an earlier date.');
-        setLoading(false);
-        return;
-      }
-
-      /* ── LOOP ──────────────────────────────────────────────────
-         i = 0  → User's EXACT input date (Year 1, no offset)
-         i = 1  → One Hijri year later
-         ...
-         i = yearsCount → Current Hijri year (last card)
-
-         Change from previous: was i=1..yearsCount+1 (skipped the
-         user's year). Now i=0..yearsCount includes it as Year 1.
-      ─────────────────────────────────────────────────────────── */
-      const cards = [];
-
-      for (let i = 0; i <= yearsCount; i++) {
-        // i=0 → same Hijri year as user's date (no increment)
-        const anniversaryHijriYear = startYear + i;
-        const isCurrentYear        = (i === yearsCount); // true only on the last card
-
-        let gregDisplay;
-
-        if (i === 0) {
-          // Year 1 — we already know the Gregorian date: it's the user's input.
-          // Format "YYYY-MM-DD" → "Month YYYY" for display (e.g. "March 2019")
-          const [yyyy, mm] = nisabDate.split('-');
-          const monthName  = new Date(`${yyyy}-${mm}-01`)
-            .toLocaleString('en-US', { month: 'long' });
-          gregDisplay = `${monthName} ${yyyy}`;
-        } else {
-          // Subsequent years — fetch from AlAdhan hToG
-          gregDisplay = `~${anniversaryHijriYear - 579}`; // rough fallback
-          try {
-            const greg  = await hijriToGregorian(startH.day, startH.monthNum, anniversaryHijriYear);
-            gregDisplay = greg.display;
-          } catch {
-            // Keep rough estimate if sub-call fails
-          }
+      const res = await API.post('/past-dates', { startDate, yearsCount: finalCount });
+      if (res.data.success) {
+        if (res.data.dates.length === 0) {
+            setError('The dates for this period are in the future. Please pick an older start date.');
+            setLoading(false);
+            return;
         }
-
-        cards.push({
-          id:               i,            // 0-indexed internally
-          yearLabel:        `Year ${i + 1}`,  // display as Year 1, Year 2 …
-          isCurrentYear,
-          hijriDay:         startH.day,
-          hijriMonthNum:    startH.monthNum,
-          hijriMonthEn:     startH.monthEn,
-          hijriYear:        anniversaryHijriYear,
-          gregorianApprox:  gregDisplay,
-          totalWealth:      '',           // user fills this in Step 2
-          droppedBelowNisab: false,       // toggle in Step 2
+        
+        const validDates = res.data.dates;
+        setYearDates(validDates);
+        
+        // --- ROBUST SYNC: Ensure wealthArray matches validDates length ---
+        setWealthArray(prev => {
+            let newArr = [...prev];
+            if (newArr.length < validDates.length) {
+                for (let i = newArr.length; i < validDates.length; i++) {
+                    newArr.push({ cash: '', goldGm: '', silverGm: '' });
+                }
+            } else {
+                newArr = newArr.slice(0, validDates.length);
+            }
+            return newArr;
         });
+
+        setStep('wealth');
       }
-
-      setYearCards(cards);
-      setStep(2);
-
     } catch (err) {
-      console.error(err);
-      setError('Could not fetch Hijri dates from the AlAdhan API. Please check your internet connection and try again.');
+      setError('Could not calculate dates. Please check your start date.');
     } finally {
       setLoading(false);
     }
   };
 
-  /* ═══════════════════════════════════════════════
-     Update a specific field on a specific year card
-  ═══════════════════════════════════════════════ */
-  const updateCard = (id, field, value) => {
-    setYearCards(prev =>
-      prev.map(card => card.id === id ? { ...card, [field]: value } : card)
-    );
-  };
-
-  /* ═══════════════════════════════════════════════
-     STEP 2 → STEP 3: Calculate & Submit
-  ═══════════════════════════════════════════════ */
-  const handleSubmit = async () => {
-    setSubmitting(true);
+  const handleCalculate = async (e) => {
+    e.preventDefault();
+    setLoading(true);
     setError('');
 
     try {
-      // Build payload — 2.5% Zakat, 0 if wealth dropped below Nisab
-      const payload = yearCards.map(card => ({
-        yearLabel:         card.yearLabel,
-        hijriYear:         card.hijriYear,
-        hijriMonth:        card.hijriMonthEn,
-        gregorianApprox:   card.gregorianApprox,
-        totalWealth:       parseFloat(card.totalWealth) || 0,
-        droppedBelowNisab: card.droppedBelowNisab,
-        // Calculate 2.5% — zero if wealth dropped below Nisab
-        zakatDue: card.droppedBelowNisab
-          ? 0
-          : (parseFloat(card.totalWealth) || 0) * 0.025,
-      }));
+      const response = await API.post('/past-bulk', {
+        startDate,
+        yearsCount: yearDates.length, 
+        wealthArray
+      });
 
-      // Frontend total (used as fallback if backend is offline)
-      const frontendTotal = payload.reduce((sum, y) => sum + y.zakatDue, 0);
+      if (response.data.success) {
+        setResult(response.data);
+        setStep('result');
+        // --- DELAYED SAVE: Only save to DB if the journey is complete (no cycle break) ---
+        if (!response.data.cycleBroken) {
+          try {
+            // Calculate total cumulative wealth across all years (past segments + current segment)
+            const combinedBreakdown = [...pastBreakdowns, ...response.data.yearlyBreakdown];
+            const cumulativeWealth = combinedBreakdown.reduce((sum, y) => sum + (y.userWealth || 0), 0);
 
-      /* ── Save to localStorage for Dashboard ── */
-      const historyRecord = {
-        id:             Date.now(),
-        type:           'Missed Zakat',
-        totalWealth:    payload.reduce((s, y) => s + y.totalWealth, 0),
-        zakatAmount:    frontendTotal,
-        dateCalculated: new Date().toLocaleDateString('en-US', {
-          year: 'numeric', month: 'short', day: 'numeric',
-        }),
-        years: payload,
-      };
-      const existing = JSON.parse(localStorage.getItem('zakatHistory') || '[]');
-      localStorage.setItem('zakatHistory', JSON.stringify([historyRecord, ...existing]));
-
-      /* ── POST full JSON payload to backend ── */
-      // submitPastZakat sends: POST /api/zakat/calculate-past
-      // Body: { years: [...] }
-      // Returns: { success, grandTotal, savedRecord, source }
-      const backendRes = await submitPastZakat(payload);
-
-      // Use grandTotal from backend if DB save succeeded,
-      // otherwise fall back to the frontend-calculated total
-      const finalTotal  = backendRes.grandTotal ?? frontendTotal;
-      const savedToDB   = backendRes.source === 'database' && backendRes.success;
-
-      setResult({ totalMissed: finalTotal, payload, savedToDB });
-      setStep(3);
-
+            await API.post('/save', {
+              type: 'Missed Zakat (Bulk)',
+              totalWealth: cumulativeWealth,
+              zakatAmount: (accumulatedZakat + (response.data.totalPendingZakat || 0)),
+              dateCalculated: new Date().toISOString(),
+              hijriDate: response.data.yearlyBreakdown[response.data.yearlyBreakdown.length - 1]?.hijriDate || ''
+            });
+          } catch (saveErr) {
+            console.error("Final save failed:", saveErr);
+          }
+        }
+      }
     } catch (err) {
-      console.error(err);
-      setError('Submission failed. Please try again.');
+      setError(err.response?.data?.message || 'Server error.');
     } finally {
-      setSubmitting(false);
+      setLoading(false);
     }
   };
 
-  /* ═══════════════════════════════════════════════
-     RESET — go back to Step 1
-  ═══════════════════════════════════════════════ */
-  const handleReset = () => {
-    setStep(1);
-    setNisabDate('');
-    setYearCards([]);
-    setResult(null);
-    setError('');
+  const handleRestart = () => {
+    // 1. Accumulate previous Zakat and breakdown
+    setAccumulatedZakat(prev => prev + (result.totalPendingZakat || 0));
+    setPastBreakdowns(prev => [...prev, ...result.yearlyBreakdown]);
+
+    // 2. Calculate remaining years
+    const remaining = yearsCount - result.brokenAtYear;
+    const finalNewCount = remaining > 0 ? remaining : 1;
+    
+    // 3. Update yearsCount state and fetch new dates
+    setYearsCount(finalNewCount);
+    fetchDates(finalNewCount); // Pass directly to avoid async state delay
   };
 
-  /* ═══════════════════════════════════════════════
-     RENDER
-  ═══════════════════════════════════════════════ */
+  const handleFullReset = () => {
+    setStep('setup');
+    setAccumulatedZakat(0);
+    setPastBreakdowns([]);
+    setResult(null);
+    setWealthArray([{ cash: '', goldGm: '', silverGm: '' }]);
+  };
+
   return (
-    <div className="wizard">
-
-      {/* ── PAGE HEADER ── */}
-      <div className="wizard__header">
-        <h1 className="wizard__title">Time-Travel Zakat Wizard</h1>
-        <p className="wizard__sub">
-          Calculate your missed Zakat obligations year by year using the Islamic Hijri calendar.
-        </p>
-      </div>
-
-      {/* ── STEP PROGRESS INDICATOR ── */}
-      <div className="wizard__progress">
-        {['Select Date', 'Enter Wealth', 'Results'].map((label, i) => (
-          <React.Fragment key={i}>
-            <div className={`wizard__prog-step ${step > i ? 'done' : ''} ${step === i + 1 ? 'active' : ''}`}>
-              <div className="wizard__prog-num">
-                {step > i + 1 ? '✓' : i + 1}
-              </div>
-              <span className="wizard__prog-label">{label}</span>
-            </div>
-            {/* Connector line between steps */}
-            {i < 2 && <div className={`wizard__prog-line ${step > i + 1 ? 'done' : ''}`} />}
-          </React.Fragment>
-        ))}
-      </div>
-
-      {/* ── GLOBAL ERROR BANNER ── */}
-      {error && (
-        <div className="wizard__error-banner">
-          ⚠ {error}
+    <div className="fade-in" style={{ height: 'calc(100vh - 40px)', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+      
+      {/* --- HEADER --- */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+        <div>
+          <h2 style={{ margin: 0 }}>Zakat Time Machine</h2>
+          <div style={{ fontSize: '0.75rem', color: '#f59e0b', marginTop: '0.2rem' }}>
+            <AlertTriangle size={12} /> Rates supported: 2021 - {new Date().getFullYear()}
+          </div>
         </div>
-      )}
+        <button className="btn btn-secondary btn-sm" onClick={() => navigate('/')}>
+          <ArrowLeft size={14} /> Dashboard
+        </button>
+      </div>
 
-      {/* ════════════════════════════════════════
-          STEP 1 — Date Input
-      ════════════════════════════════════════ */}
-      {step === 1 && (
-        <div className="wizard__card fade-up">
-          <h2 className="wizard__card-title">When did your wealth first reach Nisab?</h2>
-          <p className="wizard__card-desc">
-            Select the approximate Gregorian date when your total wealth (cash, gold, silver) 
-            first crossed the Nisab threshold. This starts your Hawl (1-year Zakat cycle).
-          </p>
+      {/* --- STEPPER --- */}
+      <div style={{ display: 'flex', justifyContent: 'center', gap: '1.5rem', marginBottom: '1.5rem', fontSize: '0.8rem' }}>
+        <div style={{ opacity: step === 'setup' ? 1 : 0.5, display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+          <div style={{ width: '20px', height: '20px', borderRadius: '50%', background: step === 'setup' ? 'var(--primary)' : 'var(--border)', color: 'white', textAlign: 'center', lineHeight: '20px', fontSize: '0.7rem' }}>1</div>
+          <span>Setup</span>
+        </div>
+        <div style={{ opacity: step === 'wealth' ? 1 : 0.5, display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+          <div style={{ width: '20px', height: '20px', borderRadius: '50%', background: step === 'wealth' ? 'var(--primary)' : 'var(--border)', color: 'white', textAlign: 'center', lineHeight: '20px', fontSize: '0.7rem' }}>2</div>
+          <span>Wealth</span>
+        </div>
+        <div style={{ opacity: step === 'result' ? 1 : 0.5, display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+          <div style={{ width: '20px', height: '20px', borderRadius: '50%', background: step === 'result' ? 'var(--primary)' : 'var(--border)', color: 'white', textAlign: 'center', lineHeight: '20px', fontSize: '0.7rem' }}>3</div>
+          <span>Result</span>
+        </div>
+      </div>
 
-          <form onSubmit={handleStartJourney}>
+      {/* --- CONTENT AREA --- */}
+      <div style={{ flex: 1, overflowY: 'auto', paddingRight: '0.5rem' }} className="custom-scroll">
+        
+        {step === 'setup' && (
+          <div className="glass-card fade-in" style={{ maxWidth: '500px', margin: '0 auto', padding: '2rem' }}>
+            {error && (
+              <div style={{ background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', padding: '0.75rem', borderRadius: '8px', marginBottom: '1.5rem', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <AlertTriangle size={16} /> {error}
+              </div>
+            )}
             <div className="input-group">
-              <label htmlFor="nisab-date">Date Wealth Reached Nisab</label>
-              <input
-                id="nisab-date"
-                type="date"
-                className="input-field"
-                value={nisabDate}
-                onChange={e => setNisabDate(e.target.value)}
-                max={(() => {
-                  // Use LOCAL timezone — toISOString() returns UTC which can be
-                  // yesterday's date for users east of UTC (e.g. IST = UTC+5:30)
-                  const t = new Date();
-                  return `${t.getFullYear()}-${String(t.getMonth() + 1).padStart(2,'0')}-${String(t.getDate()).padStart(2,'0')}`;
-                })()}
-                required
+              <label style={{ fontSize: '0.85rem' }}>Duration (Years Pending)</label>
+              <select className="input-field" value={yearsCount} onChange={handleYearsChange} style={{ height: '45px' }}>
+                {[1, 2, 3, 4, 5].map(n => <option key={n} value={n}>{n} Year{n > 1 ? 's' : ''}</option>)}
+              </select>
+            </div>
+            <div className="input-group" style={{ marginTop: '1.5rem' }}>
+              <label style={{ fontSize: '0.85rem' }}>Initial Nisab Date</label>
+              <input 
+                type="date" 
+                className="input-field" 
+                value={startDate} 
+                onChange={(e) => setStartDate(e.target.value)} 
+                max={new Date().toISOString().split('T')[0]}
+                required 
+                style={{ height: '45px' }} 
               />
             </div>
+            <button className="btn btn-primary w-full mt-6" style={{ height: '50px' }} onClick={() => fetchDates()} disabled={!startDate || loading}>
+              {loading ? <Loader2 className="spinning" /> : <>Next Step <ArrowRight size={18} /></>}
+            </button>
+          </div>
+        )}
 
-            <button
-              type="submit"
-              className="btn-primary w-full"
-              disabled={loading || !nisabDate}
-            >
-              {loading ? (
-                <span className="wizard__loading-row">
-                  <span className="wizard__spinner" />
-                  Fetching Hijri Dates from AlAdhan API...
-                </span>
-              ) : (
-                'Begin Time-Travel Journey →'
+        {step === 'wealth' && (
+          <div style={{ maxWidth: '850px', margin: '0 auto' }}>
+            {accumulatedZakat > 0 && (
+                <div style={{ background: 'rgba(16, 185, 129, 0.1)', padding: '0.75rem', borderRadius: '8px', marginBottom: '1rem', border: '1px solid var(--accent)', fontSize: '0.85rem', color: 'var(--accent)', fontWeight: 600 }}>
+                    <ShieldCheck size={16} style={{ verticalAlign: 'middle', marginRight: '0.5rem' }} /> Already Saved: ₹{accumulatedZakat.toLocaleString()} from previous years.
+                </div>
+            )}
+            <form onSubmit={handleCalculate}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                {yearDates.map((dateObj, index) => (
+                  <div key={index} className="glass-card fade-in" style={{ padding: '0.75rem 1.25rem', display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
+                    <div style={{ width: '160px' }}>
+                       <div style={{ fontWeight: 800, fontSize: '1rem', color: 'var(--primary)', textTransform: 'uppercase' }}>YEAR {index + 1}</div>
+                       <div style={{ fontSize: '0.75rem', color: 'var(--text-main)', marginTop: '0.2rem' }}>{forceEnglishNumerals(dateObj.hijri)}</div>
+                       <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 600 }}>({forceEnglishNumerals(dateObj.gregorian)})</div>
+                    </div>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '1rem', flex: 1 }}>
+                      {dateObj.isFuture ? (
+                        <div style={{ gridColumn: 'span 3', background: 'rgba(245, 158, 11, 0.05)', padding: '0.75rem', borderRadius: '8px', border: '1px dashed #f59e0b', color: '#f59e0b', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '0.5rem', justifyContent: 'center' }}>
+                          <Loader2 size={16} className="spinning" /> Wait for some time to be eligible for this year.
+                        </div>
+                      ) : (
+                        <>
+                          <div className="input-group" style={{ marginBottom: 0 }}>
+                            <input type="number" className="input-field" placeholder="Cash ₹" value={wealthArray[index]?.cash || ''} onChange={(e) => handleFieldChange(index, 'cash', e.target.value)} required style={{ height: '40px', fontSize: '0.9rem' }} />
+                          </div>
+                          <div className="input-group" style={{ marginBottom: 0 }}>
+                            <input type="number" className="input-field" placeholder="Gold (g)" value={wealthArray[index]?.goldGm || ''} onChange={(e) => handleFieldChange(index, 'goldGm', e.target.value)} required style={{ height: '40px', fontSize: '0.9rem' }} />
+                          </div>
+                          <div className="input-group" style={{ marginBottom: 0 }}>
+                            <input type="number" className="input-field" placeholder="Silver (g)" value={wealthArray[index]?.silverGm || ''} onChange={(e) => handleFieldChange(index, 'silverGm', e.target.value)} required style={{ height: '40px', fontSize: '0.9rem' }} />
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <div style={{ display: 'flex', gap: '1rem', marginTop: '1.5rem' }}>
+                <button type="button" className="btn btn-secondary w-full" onClick={() => setStep('setup')} style={{ height: '45px' }}>Back</button>
+                <button type="submit" className="btn btn-primary w-full" style={{ height: '45px' }} disabled={loading}>
+                  {loading ? <Loader2 className="spinning" /> : 'Calculate Zakat'}
+                </button>
+              </div>
+            </form>
+          </div>
+        )}
+
+        {step === 'result' && result && (
+          <div style={{ maxWidth: '850px', margin: '0 auto' }}>
+            <div className="glass-card mb-4" style={{ padding: '1.5rem', textAlign: 'center', background: 'rgba(16, 185, 129, 0.1)', border: '1px solid var(--accent)' }}>
+              <h1 style={{ margin: 0, fontSize: '2.5rem', color: 'var(--accent)' }}>₹{(accumulatedZakat + (result.totalPendingZakat || 0)).toLocaleString()}</h1>
+              <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--text-muted)', fontWeight: 600 }}>Total Pending Zakat</p>
+              {accumulatedZakat > 0 && (
+                <div style={{ fontSize: '0.75rem', color: 'var(--accent)', marginTop: '0.5rem', opacity: 0.8 }}>
+                  (Cycle 1: ₹{accumulatedZakat.toLocaleString()} + Current Cycle: ₹{(result.totalPendingZakat || 0).toLocaleString()})
+                </div>
               )}
-            </button>
-          </form>
+            </div>
 
-          {/* Educational Nisab info */}
-          <div className="wizard__info-box">
-            <p className="wizard__info-title">💡 What is Nisab?</p>
-            <p>
-              The Nisab is the minimum amount of wealth that makes Zakat obligatory.
-              It is equivalent to <strong>87.48g of gold</strong> or <strong>612.36g of silver</strong> — 
-              whichever is lower. Once your wealth surpasses this for a full Hijri year (Hawl), 
-              Zakat of 2.5% becomes due.
-            </p>
-          </div>
-        </div>
-      )}
-
-      {/* ════════════════════════════════════════
-          STEP 2 — Year-by-Year Wealth Entry
-      ════════════════════════════════════════ */}
-      {step === 2 && (
-        <div className="fade-up">
-
-          {/* Islamic ruling notice */}
-          <div className="wizard__notice">
-            <strong>☪ Important Islamic Ruling (Hawl Reset):</strong>
-            <p>
-              If your wealth dropped to <strong>zero or below Nisab</strong> during any Hijri year, 
-              your Zakat obligation for that year is <strong>paused</strong>. The one-year Hawl cycle 
-              restarts fresh when your wealth returns above the Nisab threshold.
-            </p>
-          </div>
-
-          {/* Timeline of yearly cards */}
-          <div className="wizard__timeline">
-            {yearCards.map((card, index) => (
-              <div
-                key={card.id}
-                className={`wizard__year-card ${card.droppedBelowNisab ? 'wizard__year-card--paused' : ''}`}
-                style={{ animationDelay: `${index * 0.07}s` }}
-              >
-                {/* Vertical timeline connector */}
-                <div className="wizard__connector">
-                  <div className={`wizard__conn-dot ${card.droppedBelowNisab ? 'paused' : ''}`} />
-                  {index < yearCards.length - 1 && <div className="wizard__conn-line" />}
-                </div>
-
-                {/* Card body */}
-                <div className="wizard__year-body">
-                  {/* Year header */}
-                  <div className="wizard__year-header">
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+              {/* Show past breakdowns if any */}
+              {[...pastBreakdowns, ...result.yearlyBreakdown].map((year, idx) => (
+                <div key={idx} className="glass-card" style={{ padding: '0.75rem 1.25rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', opacity: idx < pastBreakdowns.length ? 0.7 : 1 }}>
+                  <div style={{ display: 'flex', gap: '1.5rem', alignItems: 'center' }}>
+                    <div style={{ fontSize: '0.85rem', fontWeight: 900, background: year.status === 'Eligible' ? 'var(--primary)' : '#ef4444', color: 'white', padding: '0.4rem 0.8rem', borderRadius: '6px' }}>YEAR {idx+1}</div>
                     <div>
-                      {/* Year badge — shows "Current Year" on the last card */}
-                      <div className="wizard__badge-row">
-                        <span className="wizard__year-badge">{card.yearLabel}</span>
-                        {card.isCurrentYear && (
-                          <span className="wizard__current-badge">Current Year</span>
-                        )}
-                      </div>
-                      <h3 className="wizard__year-title">
-                        {card.hijriDay} {card.hijriMonthEn} {card.hijriYear} AH
-                      </h3>
-                      <p className="wizard__year-greg">≈ {card.gregorianApprox}</p>
-                    </div>
-                    {card.droppedBelowNisab && (
-                      <span className="wizard__paused-tag">Paused</span>
-                    )}
-                  </div>
-
-                  {/* Wealth input with ₹ prefix */}
-                  <div className="input-group">
-                    <label>Total Net Wealth on this date</label>
-                    <div className="wizard__rupee-wrap">
-                      <span className="wizard__rupee-sym">₹</span>
-                      <input
-                        type="number"
-                        className="input-field wizard__rupee-field"
-                        placeholder="0.00"
-                        value={card.totalWealth}
-                        onChange={e => updateCard(card.id, 'totalWealth', e.target.value)}
-                        disabled={card.droppedBelowNisab}
-                        min="0"
-                        step="0.01"
-                      />
+                      <h4 style={{ margin: 0, fontSize: '1rem' }}>{forceEnglishNumerals(year.hijriDate) || year.status}</h4>
+                      <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 600 }}>
+                        ({forceEnglishNumerals(year.gregorianDate ? year.gregorianDate.split('T')[0].split('-').reverse().join('-') : '')})
+                      </p>
+                      <p style={{ margin: '0.25rem 0 0', fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                        Wealth: ₹{(year.userWealth || 0).toLocaleString()} • Nisab: ₹{(year.nisab || 0).toLocaleString()}
+                      </p>
                     </div>
                   </div>
-
-                  {/* Nisab drop toggle */}
-                  <label className="wizard__toggle">
-                    <div className="wizard__toggle-track" data-checked={card.droppedBelowNisab}>
-                      <input
-                        type="checkbox"
-                        className="wizard__toggle-input"
-                        checked={card.droppedBelowNisab}
-                        onChange={e => updateCard(card.id, 'droppedBelowNisab', e.target.checked)}
-                      />
-                      <div className="wizard__toggle-thumb" />
-                    </div>
-                    <span className="wizard__toggle-text">
-                      Wealth dropped to zero / below Nisab this year — Zakat paused
-                    </span>
-                  </label>
-
-                  {/* Live 2.5% Zakat preview */}
-                  {!card.droppedBelowNisab && card.totalWealth !== '' && parseFloat(card.totalWealth) > 0 && (
-                    <div className="wizard__preview">
-                      Estimated Zakat (2.5%):&nbsp;
-                      <strong>₹{(parseFloat(card.totalWealth) * 0.025).toFixed(2)}</strong>
-                    </div>
-                  )}
+                  <h3 style={{ margin: 0, color: year.status === 'Eligible' ? 'var(--accent)' : 'var(--text-muted)', fontSize: '1.5rem' }}>₹{(year.zakatAmount || 0).toLocaleString()}</h3>
                 </div>
-              </div>
-            ))}
-          </div>
-
-          {/* Navigation buttons */}
-          <div className="wizard__nav">
-            <button className="btn-secondary" onClick={() => setStep(1)}>← Back</button>
-            <button
-              className="btn-primary"
-              onClick={handleSubmit}
-              disabled={submitting}
-            >
-              {submitting ? (
-                <span className="wizard__loading-row">
-                  <span className="wizard__spinner" /> Calculating...
-                </span>
-              ) : 'Calculate Past Zakat →'}
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* ════════════════════════════════════════
-          STEP 3 — Results
-      ════════════════════════════════════════ */}
-      {step === 3 && result && (
-        <div className="wizard__results fade-up">
-
-          {/* ── DB Save Status Banner ── */}
-          {result.savedToDB ? (
-            // Backend responded with success — record is in MongoDB
-            <div className="wizard__db-banner wizard__db-banner--success">
-              <span className="wizard__db-icon">✓</span>
-              <div>
-                <strong>Successfully Saved to Database!</strong>
-                <p>Your Zakat history has been stored in MongoDB and will persist across sessions.</p>
-              </div>
+              ))}
+              
+              {result.cycleBroken && (
+                <div className="glass-card" style={{ border: '1px solid #ef4444', background: 'rgba(239, 68, 68, 0.05)', padding: '1rem', marginTop: '0.5rem' }}>
+                  <p style={{ color: '#ef4444', margin: '0 0 0.75rem', fontSize: '0.85rem' }}>
+                    <strong>Cycle Broken!</strong> Wealth fell below Nisab in Year {pastBreakdowns.length + result.brokenAtYear}. 
+                    Select a new start date to continue:
+                  </p>
+                  <div style={{ display: 'flex', gap: '0.5rem' }}>
+                    <input 
+                      type="date" 
+                      className="input-field" 
+                      value={startDate}
+                      onChange={(e) => setStartDate(e.target.value)} 
+                      style={{ height: '35px', fontSize: '0.8rem', flex: 1, border: '1px solid #ef4444' }} 
+                    />
+                    <button 
+                      className="btn btn-primary"
+                      disabled={!startDate || loading}
+                      onClick={handleRestart}
+                      style={{ background: '#ef4444', border: 'none', height: '35px', fontSize: '0.8rem', padding: '0 1rem' }}
+                    >
+                      Restart Journey
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
-          ) : (
-            // Backend was offline — data is saved locally only
-            <div className="wizard__db-banner wizard__db-banner--local">
-              <span className="wizard__db-icon">⚡</span>
-              <div>
-                <strong>Saved Locally</strong>
-                <p>Backend is offline. Your data is saved in browser storage. Connect your backend to persist it to the database.</p>
-              </div>
+            
+            <div style={{ display: 'flex', gap: '1rem', marginTop: '1.5rem', paddingBottom: '2rem' }}>
+              <button className="btn btn-secondary w-full" onClick={handleFullReset}>Full Reset</button>
+              <button className="btn btn-primary w-full" onClick={() => navigate('/')}>Dashboard</button>
             </div>
-          )}
-
-          {/* Total amount hero */}
-          <div className="wizard__result-hero">
-            <p className="wizard__result-label">Total Missed Zakat Due</p>
-            <h2 className="wizard__result-amount">₹{result.totalMissed.toFixed(2)}</h2>
-            <p className="wizard__result-sub">
-              Across {result.payload.filter(y => !y.droppedBelowNisab).length} active Zakat year(s)
-            </p>
           </div>
+        )}
 
-          {/* Year-by-year breakdown */}
-          <div className="wizard__breakdown">
-            <h3 className="wizard__breakdown-title">Yearly Breakdown</h3>
-            {result.payload.map(year => (
-              <div key={year.hijriYear} className="wizard__breakdown-row">
-                <div>
-                  <p className="wizard__breakdown-year">{year.hijriMonth} {year.hijriYear} AH</p>
-                  <p className="wizard__breakdown-greg">≈ {year.gregorianApprox}</p>
-                  <p className="wizard__breakdown-wealth">Wealth: ₹{year.totalWealth.toFixed(2)}</p>
-                </div>
-                <div className="wizard__breakdown-zakat">
-                  {year.droppedBelowNisab
-                    ? <span className="wizard__paused-tag">Paused</span>
-                    : <span className="wizard__zakat-due">₹{year.zakatDue.toFixed(2)}</span>
-                  }
-                </div>
-              </div>
-            ))}
-          </div>
-
-          <button className="btn-secondary w-full" onClick={handleReset}>
-            ← Start Over
-          </button>
-        </div>
-      )}
-
+      </div>
     </div>
   );
 }

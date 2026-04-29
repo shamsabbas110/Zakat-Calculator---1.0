@@ -4,6 +4,7 @@ import Sidebar from './components/Sidebar.jsx';
 import Dashboard from './pages/Dashboard.jsx';
 import CurrentZakat from './pages/CurrentZakat.jsx';
 import MissedZakat from './pages/MissedZakat.jsx';
+import Admin from './pages/Admin.jsx';
 import './styles/global.css';
 
 export default function App() {
@@ -16,6 +17,7 @@ export default function App() {
             <Route path="/" element={<Dashboard />} />
             <Route path="/current" element={<CurrentZakat />} />
             <Route path="/missed" element={<MissedZakat />} />
+            <Route path="/admin" element={<Admin />} />
           </Routes>
         </div>
       </div>

@@ -32,19 +32,29 @@ export default function Dashboard() {
   
   // Format dates properly. If no history exists, default to today's date + time.
   const getFormattedDate = (record) => {
-    const formatOptions = { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' };
-    
-    if (!record) return new Date().toLocaleDateString('en-US', formatOptions);
-    
-    // If the record has a MongoDB createdAt timestamp, use it for exact time
-    if (record.createdAt) {
-      return new Date(record.createdAt).toLocaleDateString('en-US', formatOptions);
+    if (!record || !record.createdAt) {
+      const d = new Date();
+      return `${String(d.getDate()).padStart(2,'0')}-${String(d.getMonth()+1).padStart(2,'0')}-${d.getFullYear()}`;
     }
     
-    // Fallback for older localStorage records that only saved the date string
-    return record.dateCalculated;
+    const d = new Date(record.createdAt);
+    const day = String(d.getDate()).padStart(2, '0');
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const year = d.getFullYear();
+    const time = d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+    
+    return `${day}-${month}-${year} • ${time}`;
   };
   
+  const convertNumerals = (str) => {
+    if (!str) return '';
+    const numerals = {
+      '٠': '0', '١': '1', '٢': '2', '٣': '3', '٤': '4',
+      '٥': '5', '٦': '6', '٧': '7', '٨': '8', '٩': '9'
+    };
+    return str.split('').map(char => numerals[char] || char).join('');
+  };
+
   const lastCalc = history.length > 0 ? getFormattedDate(history[0]) : getFormattedDate(null);
 
   /* ═══════════════════════════════════════════════════
@@ -80,14 +90,21 @@ export default function Dashboard() {
     const now = new Date();
     const overdue = records.find(r => {
       if (!r.nextDueDateGregorian) return false;
-      // Parse "June 2018" or "Jun 2018" style dates
-      const due = new Date(r.nextDueDateGregorian);
-      return !isNaN(due) && due <= now;
+      const cleanDate = convertNumerals(r.nextDueDateGregorian);
+      const due = new Date(cleanDate);
+      return !isNaN(due.getTime()) && due <= now;
     });
     if (overdue) {
+      const cleanDate = convertNumerals(overdue.nextDueDateGregorian);
+      const d = new Date(cleanDate);
+      let fmt = cleanDate;
+      
+      if (!isNaN(d.getTime())) {
+        fmt = `${String(d.getDate()).padStart(2,'0')}-${String(d.getMonth()+1).padStart(2,'0')}-${d.getFullYear()}`;
+      }
+      
       setNotification(
-        `🚨 Your Zakat cycle has completed! Your Hawl anniversary was ` +
-        `${overdue.nextDueDateGregorian}. Please recalculate your current wealth.`
+        `🚨 Your Zakat cycle has completed! Your Hawl anniversary was ${fmt}. Please recalculate your current wealth.`
       );
     }
   };
@@ -127,15 +144,34 @@ export default function Dashboard() {
 
       {/* ══ NOTIFICATION BANNER (Hawl due alert) ══ */}
       {notification && (
-        <div className="dash__notification">
-          <Bell size={18} style={{ flexShrink: 0 }} />
-          <p>{notification}</p>
+        <div className="glass-card fade-in" style={{ 
+          marginBottom: '2rem', 
+          border: '1px solid var(--accent)', 
+          background: 'rgba(245, 158, 11, 0.05)',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '1.5rem',
+          padding: '1.5rem'
+        }}>
+          <div style={{ padding: '0.75rem', borderRadius: '12px', background: 'rgba(245, 158, 11, 0.1)' }}>
+            <Bell size={24} color="var(--accent)" />
+          </div>
+          <div style={{ flex: 1 }}>
+            <h3 style={{ margin: 0, color: 'var(--accent)', fontSize: '1.1rem' }}>Hawl Cycle Complete!</h3>
+            <p style={{ margin: '0.25rem 0 0', fontSize: '0.9rem' }}>{notification}</p>
+          </div>
           <button
-            className="dash__notif-close"
-            onClick={() => setNotification(null)}
-            aria-label="Dismiss notification"
+            className="btn btn-primary"
+            onClick={() => navigate('/current')}
+            style={{ padding: '0.5rem 1rem', fontSize: '0.875rem' }}
           >
-            <X size={16} />
+            Calculate Now
+          </button>
+          <button
+            onClick={() => setNotification(null)}
+            style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--text-muted)' }}
+          >
+            <X size={20} />
           </button>
         </div>
       )}
@@ -238,7 +274,16 @@ export default function Dashboard() {
                           {record.type || 'Zakat'}
                           {record.nextDueDateGregorian && (
                             <span className="dash__due-badge">
-                              Due: {record.nextDueDateGregorian}
+                              Due: {(() => {
+                                const cleanDate = convertNumerals(record.nextDueDateGregorian);
+                                const d = new Date(cleanDate);
+                                if (isNaN(d.getTime())) return cleanDate; 
+                                
+                                const day = String(d.getDate()).padStart(2, '0');
+                                const month = String(d.getMonth() + 1).padStart(2, '0');
+                                const year = d.getFullYear();
+                                return `${day}-${month}-${year}`;
+                              })()}
                             </span>
                           )}
                         </p>

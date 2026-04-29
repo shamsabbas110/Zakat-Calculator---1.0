@@ -1,10 +1,12 @@
 const express = require('express');
 const router = express.Router();
 const multer = require('multer');
+const momentHijri = require('moment-hijri');
+const momentTz = require('moment-timezone');
 
 // Import our controller functions
 const { 
-  calculateCurrentZakat, 
+  calculateCurrentZakat: oldCalculateCurrentZakat, 
   calculateMissedZakat, 
   calculatePastZakatArray,
   uploadReceipt,
@@ -14,46 +16,88 @@ const {
   testDbConnection
 } = require('../controllers/zakatController');
 
-// Configure Multer to store uploaded files in memory
-// This is required before sending the file to ImageKit
+const {
+  calculateCurrentZakat,
+  calculatePastZakat,
+  calculatePastZakatBulk,
+  getPastDates,
+  forceUpdateRates,
+  updateRatesManual
+} = require('../controllers/calculationController');
+
 const upload = multer({ storage: multer.memoryStorage() });
 
 // --- ROUTES ---
 
-// Route 0: Test DB Connection
-// Method: GET
 router.get('/test-db', testDbConnection);
-
-// Route 1: Calculate Current Zakat
-// Method: POST
-// Expected Body: { "cash": 5000, "goldValue": 2000, "silverValue": 0 }
 router.post('/current', calculateCurrentZakat);
 
-// Route 2: Calculate Missed Zakat (Old structure)
-// Method: POST
-// Expected Body: { "yearsMissed": 3, "wealthHistory": { "1": 10000, "2": 8000, "3": 12000 } }
+router.get('/rates', async (req, res) => {
+    try {
+        const PastRate = require('../models/PastRate');
+        const latestRate = await PastRate.findOne().sort({ date: -1 });
+
+        if (!latestRate) {
+            return res.status(404).json({ success: false, message: "No rates found in database" });
+        }
+        
+        // --- DYNAMIC TODAY (IST) ---
+        // 1. Get current time in IST using timezone library
+        const nowIST = momentTz().tz("Asia/Kolkata");
+        const todayObj = nowIST.clone().startOf('day');
+        
+        // 2. Convert to Hijri using the Hijri library (passing the JS date)
+        const hToday = momentHijri(nowIST.toDate()).subtract(1, 'days'); 
+        const hijriMonths = ["Muharram", "Safar", "Rabi' al-awwal", "Rabi' al-thani", "Jumada al-ula", "Jumada al-akhira", "Rajab", "Sha'ban", "Ramadan", "Shawwal", "Dhu al-Qi'dah", "Dhu al-Hijjah"];
+        const hijriDisplay = `${hToday.iDate()} ${hijriMonths[hToday.iMonth()]} ${hToday.iYear()} AH`;
+
+        const NISAB_SILVER_WEIGHT = 612.36;
+        const nisab = NISAB_SILVER_WEIGHT * latestRate.silverRatePerGram;
+        
+        res.status(200).json({
+            success: true,
+            goldRate: latestRate.goldRatePerGram,
+            silverRate: latestRate.silverRatePerGram,
+            nisab,
+            date: todayObj.toISOString(),
+            hijriDate: hijriDisplay
+        });
+    } catch (error) {
+        console.error("❌ Error in /rates:", error.message);
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+router.post('/past', calculatePastZakat);
+router.post('/past-bulk', calculatePastZakatBulk);
+router.post('/past-dates', getPastDates);
+router.post('/admin/update-rates', forceUpdateRates);
+router.post('/admin/update-rates-manual', updateRatesManual);
 router.post('/missed', calculateMissedZakat);
-
-// Route: Calculate Past Zakat from Array (Frontend Wizard)
-// Method: POST
-// Expected Body: { "historicalData": [{ "hijriYear": "1443", "gregorianDate": "2021", "totalWealth": 50000, "droppedBelowNisab": false }] }
 router.post('/calculate-past', calculatePastZakatArray);
-
-// Route 3: Upload a receipt
-// Method: POST
-// Expected Form-Data: key="receiptImage", value=[File]
 router.post('/upload-receipt', upload.single('receiptImage'), uploadReceipt);
-
-// Route 4: Save a calculation to DB
-// Method: POST
 router.post('/save', saveZakatRecord);
-
-// Route 5: Get all history from DB
-// Method: GET
 router.get('/history', getZakatHistory);
-
-// Route 6: Delete a specific record from DB
-// Method: DELETE
 router.delete('/:id', deleteZakatRecord);
+
+router.post('/update-manual-rates', async (req, res) => {
+    const { password, goldRate, silverRate } = req.body;
+    if (password !== 'admin110') return res.status(401).json({ success: false, message: "Unauthorized" });
+    try {
+        const PastRate = require('../models/PastRate');
+        const targetDate = new Date();
+        targetDate.setUTCHours(0,0,0,0);
+        const m = momentHijri(targetDate).subtract(1, 'days');
+        const hijriMonths = ["Muharram", "Safar", "Rabi' al-awwal", "Rabi' al-thani", "Jumada al-ula", "Jumada al-akhira", "Rajab", "Sha'ban", "Ramadan", "Shawwal", "Dhu al-Qi'dah", "Dhu al-Hijjah"];
+        const hDate = `${m.iDate()} ${hijriMonths[m.iMonth()]} ${m.iYear()} AH`;
+        const dayName = new Intl.DateTimeFormat('en-US', { weekday: 'long' }).format(targetDate);
+        const updatedRate = await PastRate.findOneAndUpdate(
+            { date: targetDate },
+            { day: dayName, hijriDate: hDate, goldRatePerGram: parseFloat(goldRate), silverRatePerGram: parseFloat(silverRate) },
+            { upsert: true, new: true }
+        );
+        res.status(200).json({ success: true, message: "Rates updated!", data: updatedRate });
+    } catch (error) { res.status(500).json({ success: false, message: error.message }); }
+});
 
 module.exports = router;

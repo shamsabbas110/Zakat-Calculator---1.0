@@ -181,19 +181,33 @@ const saveZakatRecord = async (req, res) => {
       gregorianDate, 
       hijriDate, 
       nextDueDateGregorian, 
-      nextDueDateHijri 
+      nextDueDateHijri,
+      type
     } = req.body;
 
-    const newRecord = new ZakatRecord({
-      totalWealth,
-      zakatAmount,
-      gregorianDate,
-      hijriDate,
-      nextDueDateGregorian,
-      nextDueDateHijri
-    });
-
-    const savedRecord = await newRecord.save();
+    let savedRecord;
+    
+    if (type && type.toLowerCase().includes('missed')) {
+      // Save to PastZakatRecord collection
+      const pastRecord = new PastZakatRecord({
+        totalWealth,
+        zakatAmount,
+        type: type || 'Missed Zakat'
+      });
+      savedRecord = await pastRecord.save();
+    } else {
+      // Save to ZakatRecord collection (Current)
+      const newRecord = new ZakatRecord({
+        totalWealth,
+        zakatAmount,
+        gregorianDate,
+        hijriDate,
+        nextDueDateGregorian,
+        nextDueDateHijri,
+        type: type || 'Current Zakat'
+      });
+      savedRecord = await newRecord.save();
+    }
 
     res.status(201).json({
       success: true,
