@@ -48,8 +48,23 @@ const calculateCurrentZakat = async (req, res) => {
         const nextDueDateGregorian = nextDateMoment.format('YYYY-MM-DD');
         const { day: nDay, monthName: nMonth, year: nYear } = getHijriParts(nextDueDateGregorian);
         const nextDueDateHijri = `${nDay} ${nMonth} ${nYear} AH`;
+        // Recalculate Hijri Date for the response to reflect the new +1 adjustment logic
+        const { day: cDay, monthName: cMonth, year: cYear } = getHijriParts(latestRate.date);
+        const currentHijriDate = `${cDay} ${cMonth} ${cYear} AH`;
 
-        return res.status(200).json({ success: true, totalWealth, nisab, goldRate, silverRate, zakatAmount, isEligible, date: latestRate.date, hijriDate: latestRate.hijriDate, nextDueDateGregorian, nextDueDateHijri });
+        return res.status(200).json({ 
+            success: true, 
+            totalWealth, 
+            nisab, 
+            goldRate, 
+            silverRate, 
+            zakatAmount, 
+            isEligible, 
+            date: latestRate.date, 
+            hijriDate: currentHijriDate, 
+            nextDueDateGregorian, 
+            nextDueDateHijri 
+        });
     } catch (error) { res.status(500).json({ success: false, message: error.message }); }
 };
 

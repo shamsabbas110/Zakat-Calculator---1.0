@@ -47,7 +47,7 @@ router.get('/rates', async (req, res) => {
         const todayObj = nowIST.clone().startOf('day');
         
         // 2. Convert to Hijri using the Hijri library (passing the JS date)
-        const hToday = momentHijri(nowIST.toDate()).subtract(1, 'days'); 
+        const hToday = momentHijri(nowIST.toDate()); 
         const hijriMonths = ["Muharram", "Safar", "Rabi' al-awwal", "Rabi' al-thani", "Jumada al-ula", "Jumada al-akhira", "Rajab", "Sha'ban", "Ramadan", "Shawwal", "Dhu al-Qi'dah", "Dhu al-Hijjah"];
         const hijriDisplay = `${hToday.iDate()} ${hijriMonths[hToday.iMonth()]} ${hToday.iYear()} AH`;
 
@@ -87,7 +87,7 @@ router.post('/update-manual-rates', async (req, res) => {
         const PastRate = require('../models/PastRate');
         const targetDate = new Date();
         targetDate.setUTCHours(0,0,0,0);
-        const m = momentHijri(targetDate).subtract(1, 'days');
+        const m = momentHijri(targetDate);
         const hijriMonths = ["Muharram", "Safar", "Rabi' al-awwal", "Rabi' al-thani", "Jumada al-ula", "Jumada al-akhira", "Rajab", "Sha'ban", "Ramadan", "Shawwal", "Dhu al-Qi'dah", "Dhu al-Hijjah"];
         const hDate = `${m.iDate()} ${hijriMonths[m.iMonth()]} ${m.iYear()} AH`;
         const dayName = new Intl.DateTimeFormat('en-US', { weekday: 'long' }).format(targetDate);
