@@ -11,8 +11,7 @@ const hijriMonths = [
 ];
 
 function getAdjustedHijriDate(date) {
-  // Use moment-hijri and force -1 adjustment to match user's calendar (Today = 12)
-  const m = require('moment-hijri')(date).subtract(1, 'days');
+  const m = moment(date);
   const iDay = m.iDate();
   const iMonth = m.iMonth(); 
   const iYear = m.iYear();

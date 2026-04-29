@@ -16,8 +16,8 @@ const ZAKAT_RATE = 0.025; // 2.5%
  * Helper to get Hijri Parts
  */
 const getHijriParts = (date) => {
-    // Force Asia/Kolkata timezone and -1 day adjustment to match user's local calendar
-    const m = momentHijri(date, 'YYYY-MM-DD').subtract(1, 'days');
+    // Use momentHijri for parsing to avoid local numeral issues
+    const m = momentHijri(date, 'YYYY-MM-DD');
     if (!m.isValid()) return { day: '01', monthNum: 0, monthName: 'Muharram', year: 1445 };
     const day = m.iDate();
     const monthIndex = m.iMonth();

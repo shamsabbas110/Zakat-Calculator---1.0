@@ -42,9 +42,11 @@ router.get('/rates', async (req, res) => {
         }
         
         // --- DYNAMIC TODAY (IST) ---
+        // 1. Get current time in IST using timezone library
         const nowIST = momentTz().tz("Asia/Kolkata");
+        const todayObj = nowIST.clone().startOf('day');
         
-        // Use -1 adjustment to match user's local moon sighting (Today = 12)
+        // 2. Convert to Hijri using the Hijri library (passing the JS date)
         const hToday = momentHijri(nowIST.toDate()).subtract(1, 'days'); 
         const hijriMonths = ["Muharram", "Safar", "Rabi' al-awwal", "Rabi' al-thani", "Jumada al-ula", "Jumada al-akhira", "Rajab", "Sha'ban", "Ramadan", "Shawwal", "Dhu al-Qi'dah", "Dhu al-Hijjah"];
         const hijriDisplay = `${hToday.iDate()} ${hijriMonths[hToday.iMonth()]} ${hToday.iYear()} AH`;
@@ -83,8 +85,9 @@ router.post('/update-manual-rates', async (req, res) => {
     if (password !== 'admin110') return res.status(401).json({ success: false, message: "Unauthorized" });
     try {
         const PastRate = require('../models/PastRate');
-        const nowIST = momentTz().tz("Asia/Kolkata");
-        const m = momentHijri(nowIST.toDate()).subtract(1, 'days');
+        const targetDate = new Date();
+        targetDate.setUTCHours(0,0,0,0);
+        const m = momentHijri(targetDate).subtract(1, 'days');
         const hijriMonths = ["Muharram", "Safar", "Rabi' al-awwal", "Rabi' al-thani", "Jumada al-ula", "Jumada al-akhira", "Rajab", "Sha'ban", "Ramadan", "Shawwal", "Dhu al-Qi'dah", "Dhu al-Hijjah"];
         const hDate = `${m.iDate()} ${hijriMonths[m.iMonth()]} ${m.iYear()} AH`;
         const dayName = new Intl.DateTimeFormat('en-US', { weekday: 'long' }).format(targetDate);
