@@ -1,8 +1,12 @@
 const cron = require('node-cron');
 const axios = require('axios');
 const moment = require('moment-hijri');
+require('moment-timezone'); // Extends the moment object above
 const mongoose = require('mongoose');
 const PastRate = require('../models/PastRate');
+
+// Force English locale
+moment.locale('en');
 
 const hijriMonths = [
   "Muharram", "Safar", "Rabi' al-awwal", "Rabi' al-thani",
@@ -11,11 +15,15 @@ const hijriMonths = [
 ];
 
 function getAdjustedHijriDate(date) {
-  const m = moment(date);
+  // Use the moment instance with timezone support
+  const m = moment(date).tz('Asia/Kolkata');
   const iDay = m.iDate();
   const iMonth = m.iMonth(); 
   const iYear = m.iYear();
-  return `${iDay} ${hijriMonths[iMonth]} ${iYear} AH`;
+  const hijriStr = `${iDay} ${hijriMonths[iMonth]} ${iYear} AH`;
+  
+  console.log(`[DateFix] IST Date: ${m.format('YYYY-MM-DD')} => Hijri: ${hijriStr}`);
+  return hijriStr;
 }
 
 // Website helper emulators
@@ -73,9 +81,7 @@ async function updateRates(forceSync = false) {
     let finalResult = { date: latestDate, goldPrice, silverPrice, hDate };
 
     // We always want to fill gaps up to Today (IST)
-    const todayStr = new Date().toLocaleDateString("en-US", { timeZone: "Asia/Kolkata" });
-    const today = new Date(todayStr);
-    today.setHours(0,0,0,0);
+    const today = moment().tz("Asia/Kolkata").startOf('day').toDate();
     
     if (today > latestDate) {
         console.log(`[Cron] Gap detected between ${latestDate.toISOString().split('T')[0]} and today. Filling gaps...`);
@@ -95,7 +101,7 @@ async function updateRates(forceSync = false) {
             );
             tempDate.setDate(tempDate.getDate() + 1);
         }
-        console.log(`[Cron] Automatic Sync successful up to ${todayStr}`);
+        console.log(`[Cron] Automatic Sync successful up to ${moment(today).format('YYYY-MM-DD')}`);
         finalResult = { date: today, goldPrice, silverPrice, hDate: getAdjustedHijriDate(today) };
     }
 
@@ -107,18 +113,19 @@ async function updateRates(forceSync = false) {
   }
 }
 
-// Initialize Cron Job (Runs at 12:05 AM and 12:05 PM IST every day)
+// Initialize Cron Job (Runs at 12 AM, 10 AM, 2 PM, and 6 PM IST every day)
 const initCron = () => {
-  // 5 0,12 * * * = Runs twice a day
-  cron.schedule('5 0,12 * * *', () => {
-    updateRates(false); // Automated scraper (Real data only)
+  // 0 0,10,14,18 * * * = Runs 4 times a day for fresh market updates
+  cron.schedule('0 0,10,14,18 * * *', () => {
+    console.log(`[Cron] Scheduled Sync Triggered at ${moment().tz('Asia/Kolkata').format('HH:mm')}`);
+    updateRates(false); 
   }, {
     scheduled: true,
     timezone: "Asia/Kolkata"
   });
-  console.log('✅ Gold/Silver Rate Cron Job Initialized (IST Timezone)');
+  console.log('✅ Gold/Silver Rate Cron Job Initialized (10 AM, 2 PM, 6 PM, 12 AM IST)');
   
-  // Also run once on startup (Real data only)
+  // Also run once on startup
   updateRates(false);
 };
 

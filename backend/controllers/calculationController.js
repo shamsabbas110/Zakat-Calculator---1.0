@@ -1,10 +1,9 @@
 const PastRate = require('../models/PastRate');
-const momentTz = require('moment-timezone');
-const momentHijri = require('moment-hijri');
+const moment = require('moment-hijri');
+require('moment-timezone'); // Extends the moment object above
 
 // Force English locale to prevent Arabic numerals in dates
-momentTz.locale('en');
-momentHijri.locale('en');
+moment.locale('en');
 
 /**
  * Standard Zakat Formula Constants
@@ -16,8 +15,8 @@ const ZAKAT_RATE = 0.025; // 2.5%
  * Helper to get Hijri Parts
  */
 const getHijriParts = (date) => {
-    // Use momentHijri for parsing to avoid local numeral issues
-    const m = momentHijri(date, 'YYYY-MM-DD');
+    // Lock to IST for consistency
+    const m = moment(date).tz('Asia/Kolkata');
     if (!m.isValid()) return { day: '01', monthNum: 0, monthName: 'Muharram', year: 1445 };
     const day = m.iDate();
     const monthIndex = m.iMonth();
@@ -42,14 +41,31 @@ const calculateCurrentZakat = async (req, res) => {
         let isEligible = false;
         if (totalWealth >= nisab) { isEligible = true; zakatAmount = totalWealth * ZAKAT_RATE; }
 
-        // Next Due Date Calculation (Based on TODAY'S date to avoid DB-sync lag issues)
-        const todayIST = momentTz().tz('Asia/Kolkata');
-        const nextDateMoment = momentHijri(todayIST.toDate()).add(1, 'iYear');
+        // Use Current IST Date for display (to ensure 12 AM flip works)
+        const nowIST = moment().tz('Asia/Kolkata');
+        const currentGregorian = nowIST.format('YYYY-MM-DD');
+        const { day: cDay, monthName: cMonth, year: cYear } = getHijriParts(nowIST.toDate());
+        const currentHijriDate = `${cDay} ${cMonth} ${cYear} AH`;
+
+        // Next Due Date Calculation (Based on TODAY'S date - IST locked)
+        const nextDateMoment = nowIST.clone().add(1, 'iYear');
         const nextDueDateGregorian = nextDateMoment.format('YYYY-MM-DD');
         const { day: nDay, monthName: nMonth, year: nYear } = getHijriParts(nextDueDateGregorian);
         const nextDueDateHijri = `${nDay} ${nMonth} ${nYear} AH`;
 
-        return res.status(200).json({ success: true, totalWealth, nisab, goldRate, silverRate, zakatAmount, isEligible, date: latestRate.date, hijriDate: latestRate.hijriDate, nextDueDateGregorian, nextDueDateHijri });
+        return res.status(200).json({ 
+            success: true, 
+            totalWealth, 
+            nisab, 
+            goldRate, 
+            silverRate, 
+            zakatAmount, 
+            isEligible, 
+            date: currentGregorian, 
+            hijriDate: currentHijriDate, 
+            nextDueDateGregorian, 
+            nextDueDateHijri 
+        });
     } catch (error) { res.status(500).json({ success: false, message: error.message }); }
 };
 
@@ -59,7 +75,7 @@ const calculatePastZakat = async (req, res) => {
         const startHijri = getHijriParts(englishDate);
         const anniversaryDay = startHijri.day;
         const anniversaryMonth = startHijri.monthName;
-        let currentHijriYear = momentHijri().iYear();
+        let currentHijriYear = moment().iYear();
         let loopYear = startHijri.year + 1;
         let yearlyBreakdown = [];
         let totalPendingZakat = 0;
@@ -107,9 +123,9 @@ const calculatePastZakatBulk = async (req, res) => {
             const loopYear = startHijri.year + i + 1; 
             console.log(`[Bulk] Processing Year: ${loopYear}, Month: ${anniversaryMonth}, Day: ${anniversaryDay}`);
             
-            const gregMoment = momentHijri().iYear(loopYear).iMonth(startHijri.monthNum).iDate(1);
+            const gregMoment = moment().iYear(loopYear).iMonth(startHijri.monthNum).iDate(1);
             gregMoment.iDate(anniversaryDay).startOf('day');
-            if (gregMoment.isAfter(momentHijri())) {
+            if (gregMoment.isAfter(moment())) {
                 console.log(`[Bulk] Year ${loopYear} is in the future, skipping.`);
                 break;
             }
@@ -163,9 +179,9 @@ const getPastDates = async (req, res) => {
         let dates = [];
         for (let i = 0; i < yearsCount; i++) {
             const loopYear = startHijri.year + i + 1;
-            const gregMoment = momentHijri().iYear(loopYear).iMonth(startHijri.monthNum).iDate(1);
+            const gregMoment = moment().iYear(loopYear).iMonth(startHijri.monthNum).iDate(1);
             gregMoment.iDate(anniversaryDay).startOf('day');
-            dates.push({ gregorian: gregMoment.format('DD-MM-YYYY'), hijri: `${anniversaryDay} ${anniversaryMonth} ${loopYear} AH`, isFuture: gregMoment.isAfter(momentHijri()) });
+            dates.push({ gregorian: gregMoment.format('DD-MM-YYYY'), hijri: `${anniversaryDay} ${anniversaryMonth} ${loopYear} AH`, isFuture: gregMoment.isAfter(moment()) });
         }
         res.status(200).json({ success: true, dates });
     } catch (error) { res.status(500).json({ success: false, message: error.message }); }
@@ -184,12 +200,12 @@ const updateRatesManual = async (req, res) => {
     try {
         const { date, goldRatePerGram, silverRatePerGram } = req.body;
         // Use IST Today for manual update
-        const nowIST = momentTz().tz("Asia/Kolkata").startOf('day');
+        const nowIST = moment().tz("Asia/Kolkata").startOf('day');
         const targetDate = date ? new Date(date) : nowIST.toDate();
         targetDate.setUTCHours(0,0,0,0);
         
         const hijriMonths = ["Muharram", "Safar", "Rabi' al-awwal", "Rabi' al-thani", "Jumada al-ula", "Jumada al-akhira", "Rajab", "Sha'ban", "Ramadan", "Shawwal", "Dhu al-Qi'dah", "Dhu al-Hijjah"];
-        const m = momentHijri(targetDate);
+        const m = moment(targetDate).tz('Asia/Kolkata');
         const hDate = `${m.iDate()} ${hijriMonths[m.iMonth()]} ${m.iYear()} AH`;
         const dayName = new Intl.DateTimeFormat('en-US', { weekday: 'long' }).format(targetDate);
         

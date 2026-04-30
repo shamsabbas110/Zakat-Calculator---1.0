@@ -1,8 +1,8 @@
 const express = require('express');
 const router = express.Router();
 const multer = require('multer');
-const momentHijri = require('moment-hijri');
-const momentTz = require('moment-timezone');
+const moment = require('moment-hijri');
+require('moment-timezone'); // Extends the moment object above
 
 // Import our controller functions
 const { 
@@ -42,12 +42,11 @@ router.get('/rates', async (req, res) => {
         }
         
         // --- DYNAMIC TODAY (IST) ---
-        // 1. Get current time in IST using timezone library
-        const nowIST = momentTz().tz("Asia/Kolkata");
+        const nowIST = moment().tz("Asia/Kolkata");
         const todayObj = nowIST.clone().startOf('day');
         
-        // 2. Convert to Hijri using the Hijri library (passing the JS date)
-        const hToday = momentHijri(nowIST.toDate()).subtract(1, 'days'); 
+        // Use the harmonized moment with IST lock
+        const hToday = moment(nowIST.toDate()).tz("Asia/Kolkata");
         const hijriMonths = ["Muharram", "Safar", "Rabi' al-awwal", "Rabi' al-thani", "Jumada al-ula", "Jumada al-akhira", "Rajab", "Sha'ban", "Ramadan", "Shawwal", "Dhu al-Qi'dah", "Dhu al-Hijjah"];
         const hijriDisplay = `${hToday.iDate()} ${hijriMonths[hToday.iMonth()]} ${hToday.iYear()} AH`;
 
@@ -87,7 +86,7 @@ router.post('/update-manual-rates', async (req, res) => {
         const PastRate = require('../models/PastRate');
         const targetDate = new Date();
         targetDate.setUTCHours(0,0,0,0);
-        const m = momentHijri(targetDate).subtract(1, 'days');
+        const m = moment(targetDate).tz("Asia/Kolkata");
         const hijriMonths = ["Muharram", "Safar", "Rabi' al-awwal", "Rabi' al-thani", "Jumada al-ula", "Jumada al-akhira", "Rajab", "Sha'ban", "Ramadan", "Shawwal", "Dhu al-Qi'dah", "Dhu al-Hijjah"];
         const hDate = `${m.iDate()} ${hijriMonths[m.iMonth()]} ${m.iYear()} AH`;
         const dayName = new Intl.DateTimeFormat('en-US', { weekday: 'long' }).format(targetDate);
