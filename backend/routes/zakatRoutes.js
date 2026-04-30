@@ -45,8 +45,8 @@ router.get('/rates', async (req, res) => {
         const nowIST = moment().tz("Asia/Kolkata");
         const todayObj = nowIST.clone().startOf('day');
         
-        // Use the harmonized moment with IST lock
-        const hToday = moment(nowIST.toDate()).tz("Asia/Kolkata");
+        // Use the harmonized moment with IST lock and -1 day adjustment
+        const hToday = moment(nowIST.toDate()).tz("Asia/Kolkata").subtract(1, 'days');
         const hijriMonths = ["Muharram", "Safar", "Rabi' al-awwal", "Rabi' al-thani", "Jumada al-ula", "Jumada al-akhira", "Rajab", "Sha'ban", "Ramadan", "Shawwal", "Dhu al-Qi'dah", "Dhu al-Hijjah"];
         const hijriDisplay = `${hToday.iDate()} ${hijriMonths[hToday.iMonth()]} ${hToday.iYear()} AH`;
 
@@ -86,7 +86,7 @@ router.post('/update-manual-rates', async (req, res) => {
         const PastRate = require('../models/PastRate');
         const targetDate = new Date();
         targetDate.setUTCHours(0,0,0,0);
-        const m = moment(targetDate).tz("Asia/Kolkata");
+        const m = moment(targetDate).tz("Asia/Kolkata").subtract(1, 'days');
         const hijriMonths = ["Muharram", "Safar", "Rabi' al-awwal", "Rabi' al-thani", "Jumada al-ula", "Jumada al-akhira", "Rajab", "Sha'ban", "Ramadan", "Shawwal", "Dhu al-Qi'dah", "Dhu al-Hijjah"];
         const hDate = `${m.iDate()} ${hijriMonths[m.iMonth()]} ${m.iYear()} AH`;
         const dayName = new Intl.DateTimeFormat('en-US', { weekday: 'long' }).format(targetDate);

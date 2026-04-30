@@ -15,8 +15,8 @@ const ZAKAT_RATE = 0.025; // 2.5%
  * Helper to get Hijri Parts
  */
 const getHijriParts = (date) => {
-    // Lock to IST for consistency
-    const m = moment(date).tz('Asia/Kolkata');
+    // Lock to IST and apply -1 day adjustment for local moon sighting
+    const m = moment(date).tz('Asia/Kolkata').subtract(1, 'days');
     if (!m.isValid()) return { day: '01', monthNum: 0, monthName: 'Muharram', year: 1445 };
     const day = m.iDate();
     const monthIndex = m.iMonth();
@@ -47,8 +47,8 @@ const calculateCurrentZakat = async (req, res) => {
         const { day: cDay, monthName: cMonth, year: cYear } = getHijriParts(nowIST.toDate());
         const currentHijriDate = `${cDay} ${cMonth} ${cYear} AH`;
 
-        // Next Due Date Calculation (Based on TODAY'S date - IST locked)
-        const nextDateMoment = nowIST.clone().add(1, 'iYear');
+        // Next Due Date Calculation (Based on TODAY'S date - IST locked with -1 day adj)
+        const nextDateMoment = moment().tz('Asia/Kolkata').subtract(1, 'days').add(1, 'iYear');
         const nextDueDateGregorian = nextDateMoment.format('YYYY-MM-DD');
         const { day: nDay, monthName: nMonth, year: nYear } = getHijriParts(nextDueDateGregorian);
         const nextDueDateHijri = `${nDay} ${nMonth} ${nYear} AH`;
@@ -205,7 +205,7 @@ const updateRatesManual = async (req, res) => {
         targetDate.setUTCHours(0,0,0,0);
         
         const hijriMonths = ["Muharram", "Safar", "Rabi' al-awwal", "Rabi' al-thani", "Jumada al-ula", "Jumada al-akhira", "Rajab", "Sha'ban", "Ramadan", "Shawwal", "Dhu al-Qi'dah", "Dhu al-Hijjah"];
-        const m = moment(targetDate).tz('Asia/Kolkata');
+        const m = moment(targetDate).tz('Asia/Kolkata').subtract(1, 'days');
         const hDate = `${m.iDate()} ${hijriMonths[m.iMonth()]} ${m.iYear()} AH`;
         const dayName = new Intl.DateTimeFormat('en-US', { weekday: 'long' }).format(targetDate);
         

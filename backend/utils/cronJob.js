@@ -15,8 +15,8 @@ const hijriMonths = [
 ];
 
 function getAdjustedHijriDate(date) {
-  // Use the moment instance with timezone support
-  const m = moment(date).tz('Asia/Kolkata');
+  // Lock to IST and apply -1 day adjustment for local moon sighting
+  const m = moment(date).tz('Asia/Kolkata').subtract(1, 'days');
   const iDay = m.iDate();
   const iMonth = m.iMonth(); 
   const iYear = m.iYear();
