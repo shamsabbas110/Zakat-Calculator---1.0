@@ -1,21 +1,23 @@
 import axios from 'axios';
 
 /* ═══════════════════════════════════════════════════════════════
-   BACKEND API INSTANCE
+   BACKEND API INSTANCES
    ─────────────────────────────────────────────────────────────
    Base URL is read from the Vite environment variable
    VITE_API_URL defined in frontend/.env
-
-   In development:  Vite's proxy forwards /api → http://localhost:5000
-                    so VITE_API_URL can be left empty or set to ''
-   In production:   Set VITE_API_URL=https://your-production-domain.com
    ═══════════════════════════════════════════════════════════════ */
-const API = axios.create({
-  // import.meta.env.VITE_API_URL is '' in dev (proxy handles it)
-  // and the full domain URL in production
-  baseURL: `${import.meta.env.VITE_API_URL || ''}/api/zakat`,
+const API_BASE = import.meta.env.VITE_API_URL || '';
 
-  // Always send/receive JSON
+export const API = axios.create({
+  baseURL: `${API_BASE}/api/zakat`,
+  headers: {
+    'Content-Type': 'application/json',
+    'Accept':       'application/json',
+  },
+});
+
+export const AUTH_API = axios.create({
+  baseURL: `${API_BASE}/api/auth`,
   headers: {
     'Content-Type': 'application/json',
     'Accept':       'application/json',
@@ -23,35 +25,141 @@ const API = axios.create({
 });
 
 /* ─────────────────────────────────────────────────────────────
-   BACKEND ENDPOINTS
+   JWT TOKEN INTERCEPTORS
+   Automatically attaches Bearer token from localStorage to all requests.
+   Gracefully handles 401 Unauthorized responses.
+   ───────────────────────────────────────────────────────────── */
+const setupInterceptors = (instance) => {
+  instance.interceptors.request.use(
+    (config) => {
+      const token = localStorage.getItem('zakat_token');
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+      }
+      return config;
+    },
+    (error) => Promise.reject(error)
+  );
+
+  instance.interceptors.response.use(
+    (response) => response,
+    (error) => {
+      if (error.response && error.response.status === 401) {
+        // Only clear and notify if this was not a login, register, or password-reset failure
+        const url = error.config?.url || '';
+        if (
+          !url.includes('/login') && 
+          !url.includes('/register') &&
+          !url.includes('/forgot-password') &&
+          !url.includes('/reset-password')
+        ) {
+          localStorage.removeItem('zakat_token');
+          localStorage.removeItem('zakat_user');
+          window.dispatchEvent(new Event('auth:unauthorized'));
+        }
+      }
+      return Promise.reject(error);
+    }
+  );
+};
+
+setupInterceptors(API);
+setupInterceptors(AUTH_API);
+
+/* ─────────────────────────────────────────────────────────────
+   AUTHENTICATION ENDPOINTS
+   ───────────────────────────────────────────────────────────── */
+
+/**
+ * Register with Email and Password
+ * POST /api/auth/register
+ */
+export const registerUser = async (data) => {
+  const response = await AUTH_API.post('/register', data);
+  return response.data;
+};
+
+/**
+ * Login with Email and Password
+ * POST /api/auth/login
+ */
+export const loginUser = async (credentials) => {
+  const response = await AUTH_API.post('/login', credentials);
+  return response.data;
+};
+
+/**
+ * Google OAuth Authentication
+ * POST /api/auth/google
+ * @param {string} credential - Google ID Token
+ * @param {string} mode - 'login' | 'signup'
+ */
+export const googleAuthUser = async (credential, mode = 'login') => {
+  const response = await AUTH_API.post('/google', { credential, mode });
+  return response.data;
+};
+
+/**
+ * Get current authenticated user profile
+ * GET /api/auth/me
+ */
+export const getMe = async () => {
+  const response = await AUTH_API.get('/me');
+  return response.data;
+};
+
+/**
+ * Update user profile
+ * PUT /api/auth/profile
+ */
+export const updateUserProfile = async (data) => {
+  const response = await AUTH_API.put('/profile', data);
+  return response.data;
+};
+
+/**
+ * Request Password Reset Email
+ * POST /api/auth/forgot-password
+ */
+export const forgotPassword = async (email) => {
+  const response = await AUTH_API.post('/forgot-password', { email });
+  return response.data;
+};
+
+/**
+ * Reset Password with Token
+ * POST /api/auth/reset-password/:token
+ */
+export const resetPassword = async (token, password) => {
+  const response = await AUTH_API.post(`/reset-password/${token}`, { password });
+  return response.data;
+};
+
+/* ─────────────────────────────────────────────────────────────
+   ZAKAT BACKEND ENDPOINTS
    ───────────────────────────────────────────────────────────── */
 
 /**
  * Save a Current-Year Zakat record.
- * POST /api/zakat/current
- *
- * Field names MUST match what zakatController.js reads:
- *   cash, goldValue, silverValue (NOT gold/silver)
+ * POST /api/zakat/save
  */
 export const saveCurrentZakat = async (payload) => {
-  // Remap frontend field names → backend expected names
   const body = {
     ...payload,
     goldValue:   payload.gold   ?? payload.goldValue,
     silverValue: payload.silver ?? payload.silverValue,
   };
-  const response = await API.post('/current', body);
+  const response = await API.post('/save', body);
   return response.data;
 };
 
 /**
  * Fetch all Zakat history records from MongoDB.
  * GET /api/zakat/history
- * Backend returns: { success: true, data: [...] }
+ * Scoped to currently authenticated user.
  */
 export const getZakatHistory = async () => {
   const response = await API.get('/history');
-  // Controller returns { success, data: [...] } — extract the array
   return response.data.data ?? response.data;
 };
 
@@ -64,42 +172,28 @@ export const deleteZakatRecord = async (id) => {
   return response.data;
 };
 
-/** Legacy alias kept so other pages don't break */
+/** Legacy alias kept so existing pages don't break */
 export const saveZakat = saveCurrentZakat;
 
-
 /* ─────────────────────────────────────────────────────────────
-   ALADHAN API  (free, no API key required)
-   Separate axios instance — never proxied through the backend
+   ALADHAN API (free, no API key required)
    ───────────────────────────────────────────────────────────── */
 const ALADHAN = axios.create({
   baseURL: 'https://api.aladhan.com/v1',
   headers: { 'Accept': 'application/json' },
 });
 
-/**
- * Convert a Gregorian date → Hijri date.
- * @param {string} dateStr  Format: "DD-MM-YYYY"
- * @returns {{ day, monthNum, monthEn, year }}
- */
 export const gregorianToHijri = async (dateStr) => {
   const res = await ALADHAN.get(`/gToH?date=${dateStr}`);
   const h   = res.data.data.hijri;
   return {
-    day:      h.day,           // "09"
-    monthNum: h.month.number, // 9
-    monthEn:  h.month.en,     // "Ramaḍān"
-    year:     h.year,         // "1438"
+    day:      h.day,
+    monthNum: h.month.number,
+    monthEn:  h.month.en,
+    year:     h.year,
   };
 };
 
-/**
- * Convert a Hijri date → approximate Gregorian date.
- * @param {string} day      Hijri day  "09"
- * @param {number} monthNum Hijri month number  9
- * @param {number} year     Hijri year  1438
- * @returns {{ month, year, display }}
- */
 export const hijriToGregorian = async (day, monthNum, year) => {
   const ddmm = `${String(day).padStart(2,'0')}-${String(monthNum).padStart(2,'0')}-${year}`;
   const res  = await ALADHAN.get(`/hToG?date=${ddmm}`);
@@ -111,10 +205,6 @@ export const hijriToGregorian = async (day, monthNum, year) => {
   };
 };
 
-/**
- * Get the current Hijri year by converting today's Gregorian date.
- * @returns {number}  e.g. 1447
- */
 export const getCurrentHijriYear = async () => {
   const now = new Date();
   const dd  = String(now.getDate()).padStart(2,'0');
@@ -123,33 +213,15 @@ export const getCurrentHijriYear = async () => {
   return parseInt(res.data.data.hijri.year, 10);
 };
 
-/* ─────────────────────────────────────────────────────────────
-   SUBMIT PAST ZAKAT
-   POSTs the full timeline array to the backend as strict JSON.
-   Returns the backend's response (including savedRecord + grandTotal).
-   ───────────────────────────────────────────────────────────── */
-
-/**
- * @param {Array}  years     - Array of yearly wealth records
- * @returns {{ success, grandTotal, savedRecord, source }}
- *   source = 'database' if saved to MongoDB, 'local' if offline fallback
- */
 export const submitPastZakat = async (years) => {
   try {
-    // Strict JSON body: { years: [...] }
     const response = await API.post('/calculate-past', { years });
-
-    // Expected backend response shape:
-    // { success: true, grandTotal: 1234.56, savedRecord: { _id, ... } }
     return {
       ...response.data,
       source: 'database',
     };
-
   } catch (err) {
-    // Backend is offline or returned an error — use localStorage fallback
-    console.warn('Backend unavailable, falling back to local storage.', err?.message);
-    console.error('Backend exact error:', err?.response?.data);
+    console.warn('Backend unavailable, falling back to local calculation.', err?.message);
     return {
       success:     true,
       source:      'local',

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import {
   Wallet, TrendingUp, Calendar, ArrowUpRight,
   BookOpen, Loader2, Trash2, Bell, X
@@ -58,35 +58,12 @@ export default function Dashboard() {
   const lastCalc = history.length > 0 ? getFormattedDate(history[0]) : getFormattedDate(null);
 
   /* ═══════════════════════════════════════════════════
-     LOAD HISTORY — tries backend first, localStorage fallback
-  ═══════════════════════════════════════════════════ */
-  const loadHistory = useCallback(async () => {
-    setLoading(true);
-    try {
-      // getZakatHistory() now returns the array directly (unwrapped in api.js)
-      const records = await getZakatHistory();
-      const list = Array.isArray(records) ? records : [];
-      setHistory(list);
-      checkNotifications(list);
-    } catch {
-      // Backend offline — fall back to localStorage
-      const local = JSON.parse(localStorage.getItem('zakatHistory') || '[]');
-      setHistory(local);
-      checkNotifications(local);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  useEffect(() => { loadHistory(); }, [loadHistory]);
-
-  /* ═══════════════════════════════════════════════════
      NOTIFICATION CHECK
      Fires if any record's nextDueDateGregorian is today or in the past.
      The date format from the backend / localStorage is e.g. "June 2018"
      so we compare year+month only (most practical for Hijri approximations).
   ═══════════════════════════════════════════════════ */
-  const checkNotifications = (records) => {
+  const checkNotifications = useCallback((records) => {
     const now = new Date();
     const overdue = records.find(r => {
       if (!r.nextDueDateGregorian) return false;
@@ -107,7 +84,30 @@ export default function Dashboard() {
         `🚨 Your Zakat cycle has completed! Your Hawl anniversary was ${fmt}. Please recalculate your current wealth.`
       );
     }
-  };
+  }, []);
+
+  /* ═══════════════════════════════════════════════════
+     LOAD HISTORY — tries backend first, localStorage fallback
+  ═══════════════════════════════════════════════════ */
+  const loadHistory = useCallback(async () => {
+    setLoading(true);
+    try {
+      // getZakatHistory() now returns the array directly (unwrapped in api.js)
+      const records = await getZakatHistory();
+      const list = Array.isArray(records) ? records : [];
+      setHistory(list);
+      checkNotifications(list);
+    } catch {
+      // Backend offline — fall back to localStorage
+      const local = JSON.parse(localStorage.getItem('zakatHistory') || '[]');
+      setHistory(local);
+      checkNotifications(local);
+    } finally {
+      setLoading(false);
+    }
+  }, [checkNotifications]);
+
+  useEffect(() => { loadHistory(); }, [loadHistory]);
 
   /* ═══════════════════════════════════════════════════
      DELETE RECORD
@@ -144,35 +144,30 @@ export default function Dashboard() {
 
       {/* ══ NOTIFICATION BANNER (Hawl due alert) ══ */}
       {notification && (
-        <div className="glass-card fade-in" style={{ 
-          marginBottom: '2rem', 
-          border: '1px solid var(--accent)', 
-          background: 'rgba(245, 158, 11, 0.05)',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '1.5rem',
-          padding: '1.5rem'
-        }}>
-          <div style={{ padding: '0.75rem', borderRadius: '12px', background: 'rgba(245, 158, 11, 0.1)' }}>
-            <Bell size={24} color="var(--accent)" />
+        <div className="dash__hawl-alert fade-in">
+          <div className="dash__hawl-icon-wrap">
+            <Bell size={24} color="#f59e0b" />
           </div>
-          <div style={{ flex: 1 }}>
-            <h3 style={{ margin: 0, color: 'var(--accent)', fontSize: '1.1rem' }}>Hawl Cycle Complete!</h3>
-            <p style={{ margin: '0.25rem 0 0', fontSize: '0.9rem' }}>{notification}</p>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <h3 style={{ margin: 0, color: '#f59e0b', fontSize: '1.05rem', fontWeight: 700 }}>Hawl Cycle Complete!</h3>
+            <p style={{ margin: '0.25rem 0 0', fontSize: '0.875rem', color: '#e5e7eb', wordBreak: 'break-word' }}>{notification}</p>
           </div>
-          <button
-            className="btn btn-primary"
-            onClick={() => navigate('/current')}
-            style={{ padding: '0.5rem 1rem', fontSize: '0.875rem' }}
-          >
-            Calculate Now
-          </button>
-          <button
-            onClick={() => setNotification(null)}
-            style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--text-muted)' }}
-          >
-            <X size={20} />
-          </button>
+          <div className="dash__hawl-actions">
+            <button
+              className="btn btn-primary"
+              onClick={() => navigate('/current')}
+              style={{ padding: '0.5rem 1.1rem', fontSize: '0.85rem' }}
+            >
+              Calculate Now
+            </button>
+            <button
+              onClick={() => setNotification(null)}
+              className="dash__notif-close"
+              aria-label="Dismiss notification"
+            >
+              <X size={20} />
+            </button>
+          </div>
         </div>
       )}
 
@@ -192,7 +187,7 @@ export default function Dashboard() {
       </header>
 
       {/* ══ ROW 2 — Stat Cards (3 columns) ══ */}
-      <section className="dashboard-grid" style={{ gridTemplateColumns: 'repeat(3,1fr)' }}>
+      <section className="dash__stats-grid">
 
         <div className="stat-card">
           <div className="stat-card__icon">
@@ -224,7 +219,7 @@ export default function Dashboard() {
       </section>
 
       {/* ══ ROW 3 — Bottom grid (2 columns) ══ */}
-      <div className="dashboard-grid">
+      <div className="dash__bottom-grid">
 
         {/* ── LEFT: Recent Calculations History ── */}
         <div className="dash__recent">

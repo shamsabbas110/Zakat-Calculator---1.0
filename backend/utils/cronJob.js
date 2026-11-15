@@ -70,7 +70,8 @@ async function updateRates(forceSync = false) {
         day: dayName,
         hijriDate: hDate,
         goldRatePerGram: goldPrice,
-        silverRatePerGram: silverPrice
+        silverRatePerGram: silverPrice,
+        isCarriedForward: false
       },
       { upsert: true, new: true }
     );
@@ -81,12 +82,14 @@ async function updateRates(forceSync = false) {
     let finalResult = { date: latestDate, goldPrice, silverPrice, hDate };
 
     // We always want to fill gaps up to Today (IST)
-    const today = moment().tz("Asia/Kolkata").startOf('day').toDate();
+   const todayIST = moment().tz('Asia/Kolkata');
+
+   const today = new Date(Date.UTC(todayIST.year(), todayIST.month(), todayIST.date()));
     
     if (today > latestDate) {
         console.log(`[Cron] Gap detected between ${latestDate.toISOString().split('T')[0]} and today. Filling gaps...`);
         let tempDate = new Date(latestDate);
-        tempDate.setDate(tempDate.getDate() + 1);
+        tempDate.setUTCDate(tempDate.getUTCDate() + 1);
         while (tempDate <= today) {
             const d = new Date(tempDate);
             await PastRate.findOneAndUpdate(
@@ -95,7 +98,8 @@ async function updateRates(forceSync = false) {
                     day: new Intl.DateTimeFormat('en-US', { weekday: 'long' }).format(d),
                     hijriDate: getAdjustedHijriDate(d),
                     goldRatePerGram: goldPrice,
-                    silverRatePerGram: silverPrice
+                    silverRatePerGram: silverPrice,
+                    isCarriedForward: true
                 },
                 { upsert: true }
             );
@@ -113,8 +117,15 @@ async function updateRates(forceSync = false) {
   }
 }
 
+let isCronInitialized = false;
+
 // Initialize Cron Job (Runs at 12 AM, 10 AM, 2 PM, and 6 PM IST every day)
 const initCron = () => {
+  if (isCronInitialized) {
+    return;
+  }
+  isCronInitialized = true;
+
   // 0 0,10,14,18 * * * = Runs 4 times a day for fresh market updates
   cron.schedule('0 0,10,14,18 * * *', () => {
     console.log(`[Cron] Scheduled Sync Triggered at ${moment().tz('Asia/Kolkata').format('HH:mm')}`);

@@ -1,4 +1,3 @@
-import React from 'react';
 import '../styles/Marquee.css';
 
 /**
@@ -21,9 +20,9 @@ const ITEMS = [
   'Track Every Year',
 ];
 
-export default function Marquee() {
-  // Build one full "set" of items as a string of spans
-  const ItemSet = () => (
+// Reusable item list rendered outside component to avoid re-creation on render
+function ItemSet() {
+  return (
     <>
       {ITEMS.map((text, i) => (
         <span key={i} className="marquee__item">
@@ -34,7 +33,9 @@ export default function Marquee() {
       ))}
     </>
   );
+}
 
+export default function Marquee() {
   return (
     // Outer container — hides overflow so text slides behind edges
     <div className="marquee" aria-label="Scrolling banner: Calculate Your Zakat">

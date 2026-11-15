@@ -4,7 +4,8 @@ const pastRateSchema = new mongoose.Schema({
   date: {
     type: Date,
     required: true,
-    unique: true
+    unique: true,
+    index: true
   },
   day: {
     type: String,
@@ -12,7 +13,8 @@ const pastRateSchema = new mongoose.Schema({
   },
   hijriDate: {
     type: String,
-    required: true
+    required: true,
+    index: true
   },
   goldRatePerGram: {
     type: Number,
@@ -21,6 +23,10 @@ const pastRateSchema = new mongoose.Schema({
   silverRatePerGram: {
     type: Number,
     required: true
+  },
+  isCarriedForward: {
+    type: Boolean,
+    default: false
   }
 }, {
   timestamps: true,

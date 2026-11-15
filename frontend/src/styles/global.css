@@ -1,163 +1,217 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
 
 :root {
-  --bg-root:    #0d0d0d;   /* page background */
-  --bg-card:    #141414;   /* card fill */
-  --bg-card2:   #1a1a1a;   /* nested card */
-  --border:     rgba(255,255,255,0.15);
+  --bg-root:       #0d0d0d;   /* page background */
+  --bg-card:       #141414;   /* card fill */
+  --bg-card2:      #1a1a1a;   /* nested card */
+  --border:        rgba(255,255,255,0.15);
   --border-active: rgba(255,255,255,0.55);
-  --text-main:  #ffffff;
-  --text-sub:   #9ca3af;
-  --text-muted: #6b7280;
-  --gold:       #f59e0b;
-  --emerald:    #10b981;
-  --radius-xl:  18px;
-  --radius-lg:  14px;
-  --radius-md:  10px;
-  --radius-pill:999px;
+  --text-main:     #ffffff;
+  --text-sub:      #9ca3af;
+  --text-muted:    #6b7280;
+  --gold:          #f59e0b;
+  --emerald:       #10b981;
+  --radius-xl:     18px;
+  --radius-lg:     14px;
+  --radius-md:     10px;
+  --radius-pill:   999px;
+  --font-family:   'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 /* ══════════════════════════════════════════
-   DEFINITIVE VIEWPORT LOCK
-   Chain: html → body → #root → .app-container
-   Every link must be 100vh + overflow:hidden
-   so the page-level scroll is physically impossible.
+   GLOBAL RESET & VIEWPORT SETUP
+   Eliminates unwanted body overflow on desktop
+   Provides smooth touch scrolling on mobile
    ══════════════════════════════════════════ */
 
-html,
-body {
-  height: 100vh;              /* exact viewport height — never taller */
+html {
+  height: 100%;
   width: 100%;
   margin: 0;
   padding: 0;
-  overflow: hidden;           /* kill body-level scroll completely */
   box-sizing: border-box;
-  font-family: 'Inter', sans-serif;
+  font-family: var(--font-family);
   background-color: var(--bg-root);
   color: var(--text-main);
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
 }
 
-/* Vite mounts React inside #root — must also be locked */
-#root {
-  height: 100vh;
+body {
+  height: 100%;
   width: 100%;
-  overflow: hidden;           /* #root must NOT scroll either */
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  background-color: var(--bg-root);
+  color: var(--text-main);
+  overflow-x: hidden;
+}
+
+/* Vite mounts React inside #root */
+#root {
+  height: 100%;
+  min-height: 100vh;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
 }
 
 *, *::before, *::after {
   box-sizing: border-box;
-  margin: 0;                  /* kill ALL default browser margins */
+  margin: 0;
   padding: 0;
 }
 
-/* Headings: browsers add default margin-top — kill it */
+/* Typography defaults */
 h1, h2, h3, h4, h5, h6 {
   margin: 0;
   padding: 0;
-  line-height: 1.15;
+  line-height: 1.2;
 }
 
-/* Paragraphs: no stray margin */
 p {
   margin: 0;
   line-height: 1.6;
 }
 
-/* ── APP SHELL ── */
-/* Must match #root exactly — the true outermost flex container */
-.app-container {
-  display: flex;
-  height: 100vh;              /* fixed to viewport */
-  width: 100%;
-  overflow: hidden;           /* shell never scrolls */
-}
-
-/* ── MAIN CONTENT ── */
-/* The ONE and ONLY scroll zone in the entire app */
-.main-content {
-  flex: 1;
-  height: 100%;               /* fill the shell vertically */
-  padding: 2rem;
-  overflow-y: auto;           /* scroll ONLY here */
-  overflow-x: hidden;
-  min-width: 0;               /* prevent flex child from overflowing */
-  display: flex;
-  flex-direction: column;
-
-  /* Hide the scrollbar track — scroll still works via mouse/touch */
-  scrollbar-width: none;          /* Firefox */
-  -ms-overflow-style: none;       /* IE / Edge */
-}
-.main-content::-webkit-scrollbar {
-  display: none;                  /* Chrome / Safari / Opera */
-}
-
-/* ── TYPOGRAPHY ── */
-h1, h2, h3, h4 { line-height: 1.15; }
-p { line-height: 1.6; }
 .text-gold    { color: var(--gold); }
 .text-emerald { color: var(--emerald); }
 
+/* ── APP SHELL ── */
+.app-container {
+  display: flex;
+  width: 100%;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* ── MAIN CONTENT ZONE ── */
+.main-content {
+  flex: 1;
+  height: 100%;
+  padding: 2rem;
+  overflow-y: auto;
+  overflow-x: hidden;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  -webkit-overflow-scrolling: touch;
+
+  /* Subtle scrollbar */
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.15) transparent;
+}
+
+.main-content::-webkit-scrollbar {
+  width: 6px;
+}
+.main-content::-webkit-scrollbar-thumb {
+  background-color: rgba(255, 255, 255, 0.15);
+  border-radius: 999px;
+}
+.main-content::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* ── GLASS CARD UTILITY ── */
+.glass-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  padding: 1.75rem;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.glass-card:hover {
+  border-color: rgba(255, 255, 255, 0.25);
+}
+
 /* ── BUTTONS ── */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border-radius: var(--radius-pill);
+  font-family: inherit;
+  font-weight: 600;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  min-height: 44px; /* touch-friendly */
+}
+
 .btn-primary {
   background-color: #ffffff;
   color: #000000;
   border: none;
-  padding: 0.6rem 1.4rem;
+  padding: 0.65rem 1.4rem;
   border-radius: var(--radius-pill);
-  font-weight: 600;
+  font-weight: 700;
   font-size: 0.875rem;
   cursor: pointer;
   transition: opacity 0.2s, transform 0.15s;
-  display: flex; /* Changed from inline-flex */
+  display: inline-flex;
   align-items: center;
-  justify-content: center; /* PERFECT CENTERING */
-  gap: 0.4rem;
+  justify-content: center;
+  gap: 0.5rem;
   letter-spacing: 0.01em;
   white-space: nowrap;
+  min-height: 44px;
 }
-.btn-primary:hover { opacity: 0.85; transform: translateY(-1px); }
+.btn-primary:hover:not(:disabled) {
+  opacity: 0.88;
+  transform: translateY(-1px);
+}
+.btn-primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
 
 .btn-secondary {
   background: transparent;
   color: var(--text-main);
   border: 1px solid var(--border);
-  padding: 0.6rem 1.4rem;
+  padding: 0.65rem 1.4rem;
   border-radius: var(--radius-pill);
   font-weight: 500;
   font-size: 0.875rem;
   cursor: pointer;
-  transition: background 0.2s;
-  display: flex; /* Changed from inline-flex */
+  transition: background 0.2s, border-color 0.2s;
+  display: inline-flex;
   align-items: center;
-  justify-content: center; /* PERFECT CENTERING */
-  gap: 0.4rem;
+  justify-content: center;
+  gap: 0.5rem;
+  min-height: 44px;
 }
-.btn-secondary:hover { background: rgba(255,255,255,0.06); }
+.btn-secondary:hover:not(:disabled) {
+  background: rgba(255,255,255,0.06);
+  border-color: rgba(255,255,255,0.35);
+}
+.btn-secondary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
 
-.btn-white {
-  background: #fff;
-  color: #000;
-  border: none;
-  padding: 0.55rem 1.2rem;
-  border-radius: var(--radius-pill);
-  font-weight: 600;
-  font-size: 0.85rem;
-  cursor: pointer;
-  transition: opacity 0.2s;
+.btn-sm {
+  padding: 0.4rem 0.9rem;
+  font-size: 0.8rem;
+  min-height: 36px;
 }
-.btn-white:hover { opacity: 0.85; }
 
 /* ── FORM INPUTS ── */
 .input-group {
   display: flex;
   flex-direction: column;
-  margin-bottom: 1.4rem;
+  margin-bottom: 1.25rem;
+  width: 100%;
 }
 .input-group label {
   font-size: 0.825rem;
-  font-weight: 500;
+  font-weight: 600;
   color: var(--text-sub);
   margin-bottom: 0.45rem;
 }
@@ -167,10 +221,11 @@ p { line-height: 1.6; }
   color: var(--text-main);
   padding: 0.75rem 1rem;
   border-radius: var(--radius-md);
-  font-size: 0.975rem;
-  font-family: 'Inter', sans-serif;
+  font-size: 0.95rem;
+  font-family: inherit;
   transition: border-color 0.2s;
   width: 100%;
+  min-height: 44px;
 }
 .input-field::placeholder { color: #555; }
 .input-field:focus {
@@ -178,29 +233,112 @@ p { line-height: 1.6; }
   border-color: var(--gold);
 }
 
-/* ── CARD (bordered box matching wireframe) ── */
-.wf-card {
-  background: var(--bg-card);
+/* Checkbox Toggle */
+.toggle-group {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.85rem 1rem;
+  border-radius: var(--radius-md);
   border: 1px solid var(--border);
-  border-radius: var(--radius-xl);
+  transition: border-color 0.2s;
+}
+.toggle-group:hover {
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.checkbox-custom {
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  border: 2px solid var(--border);
+  background: transparent;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+.checkbox-custom.checked {
+  background: var(--emerald);
+  border-color: var(--emerald);
+}
+.checkbox-custom.checked::after {
+  content: '✓';
+  color: #000;
+  font-weight: 900;
+  font-size: 13px;
+}
+
+.warning-banner {
+  background: rgba(245, 158, 11, 0.08);
+  border: 1px solid rgba(245, 158, 11, 0.25);
+  border-radius: var(--radius-md);
+  padding: 0.85rem 1rem;
+  color: #fcd34d;
 }
 
 /* ── UTILITIES ── */
 .w-full { width: 100%; }
 .mt-4   { margin-top: 1rem; }
 .mt-6   { margin-top: 1.5rem; }
-.half   { flex: 1; }
+.mb-6   { margin-bottom: 1.5rem; }
 
 /* ── FADE-UP ANIMATION ── */
 @keyframes fadeUp {
-  from { opacity: 0; transform: translateY(14px); }
+  from { opacity: 0; transform: translateY(12px); }
   to   { opacity: 1; transform: translateY(0); }
 }
-.fade-up { animation: fadeUp 0.4s ease-out both; }
+.fade-up { animation: fadeUp 0.35s ease-out both; }
 
-/* ── SPIN ── */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+.fade-in { animation: fadeIn 0.3s ease-out both; }
+
 @keyframes spin {
   from { transform: rotate(0deg); }
   to   { transform: rotate(360deg); }
 }
 .spinning { animation: spin 1s linear infinite; }
+
+/* ══════════════════════════════════════════
+   MOBILE & TABLET RESPONSIVE RULES (<= 768px)
+   ══════════════════════════════════════════ */
+@media (max-width: 768px) {
+  html, body {
+    height: auto;
+    min-height: 100%;
+    overflow-y: auto;
+  }
+
+  .app-container {
+    flex-direction: column;
+    height: 100dvh;
+    overflow: hidden;
+  }
+
+  .main-content {
+    padding: 1.25rem 1rem 3rem 1rem;
+    overflow-y: auto;
+    overflow-x: hidden;
+    height: calc(100dvh - 60px);
+  }
+
+  .glass-card {
+    padding: 1.25rem;
+    border-radius: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .main-content {
+    padding: 1rem 0.75rem 2.5rem 0.75rem;
+  }
+
+  .btn {
+    padding: 0.55rem 1.1rem;
+    font-size: 0.825rem;
+  }
+}

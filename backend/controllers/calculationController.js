@@ -1,4 +1,5 @@
 const PastRate = require('../models/PastRate');
+const mongoose = require('mongoose');
 const moment = require('moment-hijri');
 require('moment-timezone'); // Extends the moment object above
 
@@ -113,6 +114,14 @@ const calculatePastZakatBulk = async (req, res) => {
     try {
         const { startDate, yearsCount, wealthArray } = req.body;
         const startHijri = getHijriParts(startDate);
+
+        console.log('Connected Database:', mongoose.connection.name);
+        console.log('Connected Host:', mongoose.connection.host);
+        console.log('PastRate Collection:', PastRate.collection.name);
+        console.log('Total PastRate Documents:', await PastRate.countDocuments());
+        console.log('Selected Gregorian Date:', startDate);
+        console.log('Calculated Hijri Parts:', startHijri);
+
         const anniversaryDay = startHijri.day;
         const anniversaryMonth = startHijri.monthName;
         let yearlyBreakdown = [];
@@ -134,21 +143,32 @@ const calculatePastZakatBulk = async (req, res) => {
             const userGoldGm = parseFloat(wealthArray[i]?.goldGm) || 0;
             const userSilverGm = parseFloat(wealthArray[i]?.silverGm) || 0;
 
-            const searchString = new RegExp(`^${anniversaryDay} ${anniversaryMonth} ${loopYear}`, 'i');
-            console.log(`[Bulk] Searching with regex: ${searchString}`);
             
-            let selectedRate = await PastRate.findOne({ hijriDate: searchString });
-            if (!selectedRate) {
-                console.log(`[Bulk] Exact date match failed, trying month fallback...`);
-                const monthSearch = new RegExp(`${anniversaryMonth} ${loopYear}`, 'i');
-                selectedRate = await PastRate.findOne({ hijriDate: monthSearch });
-            }
+const searchString = new RegExp(
+    `^${anniversaryDay}\\s+${anniversaryMonth}\\s+${loopYear}(\\s|$)`,
+    'i'
+);
 
-            if (!selectedRate) {
-                console.warn(`[Bulk] NO RATE DATA FOUND for ${anniversaryMonth} ${loopYear}`);
-                yearlyBreakdown.push({ year: loopYear, status: "Rate Data Missing", zakatAmount: 0 });
-                continue;
-            }
+console.log(`[Bulk] Searching with regex: ${searchString}`);
+
+const selectedRate = await PastRate.findOne({
+    hijriDate: searchString
+}).lean();
+
+if (!selectedRate) {
+    console.warn(
+        `[Bulk] EXACT RATE NOT FOUND for ${anniversaryDay} ${anniversaryMonth} ${loopYear}`
+    );
+
+    yearlyBreakdown.push({
+        year: loopYear,
+        status: "Rate Data Missing",
+        zakatAmount: 0
+    });
+
+    continue;
+}
+
             
             console.log(`[Bulk] Found Rate: Gold=${selectedRate.goldRatePerGram}, Silver=${selectedRate.silverRatePerGram}`);
 

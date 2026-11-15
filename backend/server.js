@@ -1,5 +1,6 @@
 require("node:dns/promises").setServers(["1.1.1.1", "8.8.8.8"]);
-require('dotenv').config();
+const path = require('path');
+require('dotenv').config({ path: path.join(__dirname, '.env') });
 const app = require('./app');
 const connectDB = require('./config/db');
 const { initCron } = require('./utils/cronJob');

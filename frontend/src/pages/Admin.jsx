@@ -1,13 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { 
   ShieldCheck, 
   ArrowLeft, 
   Lock, 
   RefreshCw, 
-  TrendingUp,
-  Loader2,
-  CheckCircle2,
-  AlertCircle
+  TrendingUp, 
+  Loader2, 
+  CheckCircle2, 
+  AlertCircle 
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import API from '../services/api';
@@ -24,10 +24,24 @@ export default function Admin() {
   const [marketData, setMarketData] = useState(null);
 
   useEffect(() => {
-    if (step === 'form') fetchMarketData();
+    if (step === 'form') {
+      const fetchMarketData = async () => {
+        try {
+          const res = await API.get('/rates');
+          if (res.data.success) {
+            setMarketData(res.data);
+            setGoldRate(res.data.goldRate || '');
+            setSilverRate(res.data.silverRate || '');
+          }
+        } catch {
+          // ignore error
+        }
+      };
+      fetchMarketData();
+    }
   }, [step]);
 
-  const fetchMarketData = async () => {
+  const fetchLatestRates = async () => {
     try {
       const res = await API.get('/rates');
       if (res.data.success) {
@@ -35,13 +49,18 @@ export default function Admin() {
         setGoldRate(res.data.goldRate || '');
         setSilverRate(res.data.silverRate || '');
       }
-    } catch (err) {}
+    } catch {
+      // ignore error
+    }
   };
 
   const handleAuth = (e) => {
     e.preventDefault();
-    if (password === 'admin110') setStep('form');
-    else setMessage({ type: 'error', text: 'Incorrect Password' });
+    if (password === 'admin110') {
+      setStep('form');
+    } else {
+      setMessage({ type: 'error', text: 'Incorrect Password' });
+    }
   };
 
   const handleManualSubmit = async (e) => {
@@ -56,8 +75,10 @@ export default function Admin() {
         silverRatePerGram: parseFloat(silverRate) 
       });
       setMessage({ type: 'success', text: 'Rates Published Successfully' });
-      fetchMarketData();
-    } catch (err) { setMessage({ type: 'error', text: 'Failed to update' }); }
+      fetchLatestRates();
+    } catch {
+      setMessage({ type: 'error', text: 'Failed to update' });
+    }
     setLoading(false);
   };
 
@@ -67,36 +88,46 @@ export default function Admin() {
     try {
       await API.post('/admin/update-rates');
       setMessage({ type: 'success', text: 'Synced' });
-      fetchMarketData();
-    } catch (err) { setMessage({ type: 'error', text: 'Market Not Ready' }); }
+      fetchLatestRates();
+    } catch {
+      setMessage({ type: 'error', text: 'Market Not Ready' });
+    }
     setSyncLoading(false);
   };
 
   if (step === 'auth') {
     return (
-      <div style={{ height: '100vh', width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#09090b', overflow: 'hidden' }}>
-        <div className="glass-card" style={{ width: '400px', padding: '3rem', background: '#121214', borderRadius: '1.5rem', border: '1px solid #27272a', textAlign: 'center' }}>
-            <div style={{ width: '64px', height: '64px', background: 'rgba(16, 185, 129, 0.1)', borderRadius: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 2rem' }}>
-                <Lock size={32} color="#10b981" />
+      <div style={{ minHeight: '100vh', width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#09090b', padding: '1rem' }}>
+        <div className="glass-card" style={{ width: '100%', maxWidth: '400px', padding: 'clamp(1.75rem, 5vw, 3rem)', background: '#121214', borderRadius: '1.5rem', border: '1px solid #27272a', textAlign: 'center' }}>
+            <div style={{ width: '56px', height: '56px', background: 'rgba(16, 185, 129, 0.1)', borderRadius: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem' }}>
+                <Lock size={28} color="#10b981" />
             </div>
-            <h2 style={{ fontSize: '1.5rem', fontWeight: 700, marginBottom: '0.5rem' }}>Admin Panel</h2>
-            <p style={{ color: '#71717a', fontSize: '0.9rem', marginBottom: '2.5rem' }}>Enter password to continue</p>
+            <h2 style={{ fontSize: '1.5rem', fontWeight: 700, marginBottom: '0.5rem', color: '#fff' }}>Admin Panel</h2>
+            <p style={{ color: '#71717a', fontSize: '0.875rem', marginBottom: '2rem' }}>Enter password to continue</p>
             <form onSubmit={handleAuth}>
-                <input type="password" placeholder="Password" className="input-field" value={password} onChange={(e) => setPassword(e.target.value)} required style={{ height: '50px', borderRadius: '0.75rem', textAlign: 'center', background: '#18181b', border: '1px solid #27272a' }} />
-                <button className="btn btn-primary w-full mt-4" style={{ height: '50px', borderRadius: '0.75rem', fontWeight: 600 }}>Login</button>
+                <input 
+                  type="password" 
+                  placeholder="Password" 
+                  className="input-field" 
+                  value={password} 
+                  onChange={(e) => setPassword(e.target.value)} 
+                  required 
+                  style={{ height: '48px', borderRadius: '0.75rem', textAlign: 'center', background: '#18181b', border: '1px solid #27272a' }} 
+                />
+                <button className="btn btn-primary w-full mt-4" style={{ height: '48px', borderRadius: '0.75rem', fontWeight: 600 }}>Login</button>
             </form>
-            {message.text && <p style={{ color: '#f43f5e', marginTop: '1.5rem', fontSize: '0.8rem' }}>{message.text}</p>}
+            {message.text && <p style={{ color: '#f43f5e', marginTop: '1.25rem', fontSize: '0.825rem' }}>{message.text}</p>}
         </div>
       </div>
     );
   }
 
   return (
-    <div style={{ height: '100vh', width: '100%', background: '#09090b', color: '#f4f4f5', display: 'flex', flexDirection: 'column', overflow: 'hidden', alignItems: 'center' }}>
+    <div style={{ minHeight: '100vh', width: '100%', background: '#09090b', color: '#f4f4f5', display: 'flex', flexDirection: 'column', overflowY: 'auto', alignItems: 'center', paddingBottom: '3rem' }}>
       
-      {/* HEADER - ABSOLUTE CENTERED CONTENT */}
-      <div style={{ width: '100%', height: '70px', borderBottom: '1px solid #18181b', background: '#0c0c0e', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-        <div style={{ width: '100%', maxWidth: '900px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0 20px' }}>
+      {/* HEADER */}
+      <div style={{ width: '100%', borderBottom: '1px solid #18181b', background: '#0c0c0e', display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '1rem 0' }}>
+        <div style={{ width: '100%', maxWidth: '900px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0 1rem', flexWrap: 'wrap', gap: '0.5rem' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                 <ShieldCheck size={24} color="#10b981" />
                 <h1 style={{ fontSize: '1.1rem', fontWeight: 800, margin: 0 }}>Admin Dashboard</h1>
@@ -107,15 +138,17 @@ export default function Admin() {
         </div>
       </div>
 
-      {/* MAIN CONTENT - CENTERED VERTICALLY AND HORIZONTALLY */}
-      <div style={{ flex: 1, width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
-        <div style={{ width: '100%', maxWidth: '900px', display: 'flex', flexDirection: 'column', gap: '30px' }}>
+      {/* MAIN CONTENT */}
+      <div style={{ width: '100%', maxWidth: '900px', padding: 'clamp(1rem, 3vw, 2rem)' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '25px' }}>
             
             {/* STATUS BAR */}
-            <div style={{ background: '#0c0c0e', padding: '15px 25px', borderRadius: '12px', border: '1px solid #18181b', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div style={{ background: '#0c0c0e', padding: '15px 20px', borderRadius: '12px', border: '1px solid #18181b', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
                 <div>
-                    <p style={{ margin: 0, fontSize: '0.6rem', color: '#52525b', fontWeight: 800, letterSpacing: '1px' }}>MARKET STATE ({syncLoading ? 'REFRESHING...' : (marketData?.hijriDate || '...')})</p>
-                    <div style={{ display: 'flex', gap: '25px', marginTop: '5px' }}>
+                    <p style={{ margin: 0, fontSize: '0.65rem', color: '#52525b', fontWeight: 800, letterSpacing: '1px' }}>
+                      MARKET STATE ({syncLoading ? 'REFRESHING...' : (marketData?.hijriDate || '...')})
+                    </p>
+                    <div style={{ display: 'flex', gap: '20px', marginTop: '5px', flexWrap: 'wrap' }}>
                         <span style={{ fontSize: '0.9rem', fontWeight: 700, color: '#a1a1aa' }}>GOLD: <span style={{ color: '#10b981' }}>{syncLoading ? '...' : `₹${marketData?.goldRate || '--'}`}</span></span>
                         <span style={{ fontSize: '0.9rem', fontWeight: 700, color: '#a1a1aa' }}>SILVER: <span style={{ color: '#10b981' }}>{syncLoading ? '...' : `₹${marketData?.silverRate || '--'}`}</span></span>
                     </div>
@@ -126,40 +159,56 @@ export default function Admin() {
             </div>
 
             {/* INPUT BLOCKS */}
-            <form onSubmit={handleManualSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '30px' }}>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '30px' }}>
+            <form onSubmit={handleManualSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '25px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '20px' }}>
                     {/* GOLD BLOCK */}
-                    <div style={{ background: '#121214', padding: '30px', borderRadius: '20px', border: '1px solid #18181b', textAlign: 'center' }}>
-                        <div style={{ width: '40px', height: '40px', background: 'rgba(234, 179, 8, 0.05)', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 15px' }}>
+                    <div style={{ background: '#121214', padding: '25px 20px', borderRadius: '18px', border: '1px solid #18181b', textAlign: 'center' }}>
+                        <div style={{ width: '40px', height: '40px', background: 'rgba(234, 179, 8, 0.05)', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px' }}>
                             <TrendingUp size={20} color="#eab308" />
                         </div>
-                        <label style={{ display: 'block', fontSize: '0.7rem', fontWeight: 800, color: '#52525b', marginBottom: '15px', letterSpacing: '1px' }}>TODAY'S GOLD RATE (1G)</label>
+                        <label style={{ display: 'block', fontSize: '0.7rem', fontWeight: 800, color: '#52525b', marginBottom: '12px', letterSpacing: '1px' }}>TODAY'S GOLD RATE (1G)</label>
                         <div style={{ position: 'relative', width: '100%', maxWidth: '240px', margin: '0 auto' }}>
                             <span style={{ position: 'absolute', left: '15px', top: '50%', transform: 'translateY(-50%)', fontWeight: 800, color: '#3f3f46' }}>₹</span>
-                            <input type="number" step="0.01" value={goldRate} onChange={(e) => setGoldRate(e.target.value)} required placeholder="0.00" style={{ width: '100%', height: '55px', background: '#09090b', border: '1px solid #18181b', borderRadius: '12px', color: '#fff', fontSize: '1.5rem', textAlign: 'center', fontWeight: 800 }} />
+                            <input 
+                              type="number" 
+                              step="0.01" 
+                              value={goldRate} 
+                              onChange={(e) => setGoldRate(e.target.value)} 
+                              required 
+                              placeholder="0.00" 
+                              style={{ width: '100%', height: '50px', background: '#09090b', border: '1px solid #18181b', borderRadius: '12px', color: '#fff', fontSize: '1.4rem', textAlign: 'center', fontWeight: 800 }} 
+                            />
                         </div>
                     </div>
 
                     {/* SILVER BLOCK */}
-                    <div style={{ background: '#121214', padding: '30px', borderRadius: '20px', border: '1px solid #18181b', textAlign: 'center' }}>
-                        <div style={{ width: '40px', height: '40px', background: 'rgba(161, 161, 170, 0.05)', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 15px' }}>
+                    <div style={{ background: '#121214', padding: '25px 20px', borderRadius: '18px', border: '1px solid #18181b', textAlign: 'center' }}>
+                        <div style={{ width: '40px', height: '40px', background: 'rgba(161, 161, 170, 0.05)', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px' }}>
                             <TrendingUp size={20} color="#a1a1aa" />
                         </div>
-                        <label style={{ display: 'block', fontSize: '0.7rem', fontWeight: 800, color: '#52525b', marginBottom: '15px', letterSpacing: '1px' }}>TODAY'S SILVER RATE (1G)</label>
+                        <label style={{ display: 'block', fontSize: '0.7rem', fontWeight: 800, color: '#52525b', marginBottom: '12px', letterSpacing: '1px' }}>TODAY'S SILVER RATE (1G)</label>
                         <div style={{ position: 'relative', width: '100%', maxWidth: '240px', margin: '0 auto' }}>
                             <span style={{ position: 'absolute', left: '15px', top: '50%', transform: 'translateY(-50%)', fontWeight: 800, color: '#3f3f46' }}>₹</span>
-                            <input type="number" step="0.01" value={silverRate} onChange={(e) => setSilverRate(e.target.value)} required placeholder="0.00" style={{ width: '100%', height: '55px', background: '#09090b', border: '1px solid #18181b', borderRadius: '12px', color: '#fff', fontSize: '1.5rem', textAlign: 'center', fontWeight: 800 }} />
+                            <input 
+                              type="number" 
+                              step="0.01" 
+                              value={silverRate} 
+                              onChange={(e) => setSilverRate(e.target.value)} 
+                              required 
+                              placeholder="0.00" 
+                              style={{ width: '100%', height: '50px', background: '#09090b', border: '1px solid #18181b', borderRadius: '12px', color: '#fff', fontSize: '1.4rem', textAlign: 'center', fontWeight: 800 }} 
+                            />
                         </div>
                     </div>
                 </div>
 
                 {/* ACTION BUTTON */}
                 <div style={{ textAlign: 'center' }}>
-                    <button className="btn btn-primary" style={{ padding: '15px 60px', fontSize: '1rem', fontWeight: 800, borderRadius: '12px' }} disabled={loading}>
-                        {loading ? <Loader2 className="spinning" /> : 'Publish New Rates'}
+                    <button className="btn btn-primary" style={{ padding: '14px 2.5rem', fontSize: '0.95rem', fontWeight: 800, borderRadius: '12px' }} disabled={loading}>
+                        {loading ? <Loader2 className="spinning" size={18} /> : 'Publish New Rates'}
                     </button>
                     {message.text && (
-                        <div style={{ marginTop: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', color: message.type === 'error' ? '#f43f5e' : '#10b981', fontWeight: 700, fontSize: '0.9rem' }}>
+                        <div style={{ marginTop: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', color: message.type === 'error' ? '#f43f5e' : '#10b981', fontWeight: 700, fontSize: '0.875rem' }}>
                             {message.type === 'error' ? <AlertCircle size={18} /> : <CheckCircle2 size={18} />} {message.text}
                         </div>
                     )}
@@ -167,9 +216,11 @@ export default function Admin() {
             </form>
 
             {/* NISAB PREVIEW */}
-            <div style={{ padding: '20px 0', borderTop: '1px solid #18181b', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '30px' }}>
+            <div style={{ padding: '16px 0', borderTop: '1px solid #18181b', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '20px', flexWrap: 'wrap' }}>
                 <span style={{ fontSize: '0.75rem', color: '#52525b', fontWeight: 800, letterSpacing: '1px' }}>PREDICTED NISAB</span>
-                <span style={{ fontSize: '1.75rem', fontWeight: 900, color: '#10b981' }}>₹{(parseFloat(silverRate) * 612.36 || 0).toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
+                <span style={{ fontSize: '1.65rem', fontWeight: 900, color: '#10b981' }}>
+                  ₹{(parseFloat(silverRate) * 612.36 || 0).toLocaleString(undefined, { maximumFractionDigits: 0 })}
+                </span>
             </div>
 
         </div>

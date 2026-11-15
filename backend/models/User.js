@@ -3,17 +3,56 @@ const mongoose = require('mongoose');
 const userSchema = new mongoose.Schema({
   name: {
     type: String,
-    required: false
+    required: true,
+    trim: true
   },
   email: {
     type: String,
-    required: false
+    required: true,
+    unique: true,
+    lowercase: true,
+    trim: true
+  },
+  password: {
+    type: String,
+    required: false, // Optional for users who register via Google OAuth
+    select: false    // Exclude password hash from standard queries
+  },
+  googleId: {
+    type: String,
+    unique: true,
+    sparse: true     // Sparse index allows documents without googleId
+  },
+  avatar: {
+    type: String,
+    default: ''
+  },
+  authProvider: {
+    type: String,
+    enum: ['local', 'google'],
+    default: 'local'
+  },
+  role: {
+    type: String,
+    enum: ['user', 'admin'],
+    default: 'user'
+  },
+  resetPasswordToken: {
+    type: String,
+    select: false
+  },
+  resetPasswordExpires: {
+    type: Date,
+    select: false
+  },
+  passwordChangedAt: {
+    type: Date,
+    select: false
   },
   // We use an object to store past wealth as requested (not an array)
-  // This allows the frontend to send data like { year1: 50000, year2: 60000 }
   wealthHistory: {
     type: Map,
-    of: Number, // The values will be the wealth amount (Number)
+    of: Number,
     default: {}
   },
   createdAt: {

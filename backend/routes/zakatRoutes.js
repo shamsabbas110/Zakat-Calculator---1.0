@@ -4,9 +4,10 @@ const multer = require('multer');
 const moment = require('moment-hijri');
 require('moment-timezone'); // Extends the moment object above
 
+const { requireAuth, optionalAuth } = require('../middleware/authMiddleware');
+
 // Import our controller functions
 const { 
-  calculateCurrentZakat: oldCalculateCurrentZakat, 
   calculateMissedZakat, 
   calculatePastZakatArray,
   uploadReceipt,
@@ -27,10 +28,9 @@ const {
 
 const upload = multer({ storage: multer.memoryStorage() });
 
-// --- ROUTES ---
+// --- PUBLIC CALCULATION & RATE ROUTES ---
 
 router.get('/test-db', testDbConnection);
-router.post('/current', calculateCurrentZakat);
 
 router.get('/rates', async (req, res) => {
     try {
@@ -67,17 +67,23 @@ router.get('/rates', async (req, res) => {
     }
 });
 
+// Calculation endpoints (preserve all existing mathematical logic)
+router.post('/current', optionalAuth, calculateCurrentZakat);
 router.post('/past', calculatePastZakat);
 router.post('/past-bulk', calculatePastZakatBulk);
 router.post('/past-dates', getPastDates);
+router.post('/missed', calculateMissedZakat);
+router.post('/calculate-past', optionalAuth, calculatePastZakatArray);
+
+// --- PROTECTED USER RECORD STORAGE ROUTES (User Data Isolation) ---
+router.post('/save', requireAuth, saveZakatRecord);
+router.get('/history', requireAuth, getZakatHistory);
+router.delete('/:id', requireAuth, deleteZakatRecord);
+router.post('/upload-receipt', requireAuth, upload.single('receiptImage'), uploadReceipt);
+
+// --- ADMIN ROUTES (Separated from normal user accounts) ---
 router.post('/admin/update-rates', forceUpdateRates);
 router.post('/admin/update-rates-manual', updateRatesManual);
-router.post('/missed', calculateMissedZakat);
-router.post('/calculate-past', calculatePastZakatArray);
-router.post('/upload-receipt', upload.single('receiptImage'), uploadReceipt);
-router.post('/save', saveZakatRecord);
-router.get('/history', getZakatHistory);
-router.delete('/:id', deleteZakatRecord);
 
 router.post('/update-manual-rates', async (req, res) => {
     const { password, goldRate, silverRate } = req.body;

@@ -1,4 +1,3 @@
-import React from 'react';
 import { Link } from 'react-router-dom';
 import { LayoutDashboard, Calculator, History, ArrowRight } from 'lucide-react';
 import '../styles/FeatureSlider.css';
