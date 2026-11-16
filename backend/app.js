@@ -36,7 +36,18 @@ app.use('/api/auth', authRoutes);
 // Core Zakat & Rates Routes
 app.use('/api/zakat', zakatRoutes);
 
-// Production Health Check route (used by Render, uptime monitors, and load balancers)
+// Production Health Check routes (used by Render, uptime monitors, and load balancers)
+app.get('/api/health', (req, res) => {
+  res.status(200).json({
+    status: 'ok',
+    message: 'Zakat Calculator API is running'
+  });
+});
+
+app.get('/health', (req, res) => {
+  res.status(200).json({ status: 'ok', timestamp: new Date().toISOString() });
+});
+
 app.get('/', (req, res) => {
   res.status(200).json({
     status: 'healthy',
@@ -44,10 +55,6 @@ app.get('/', (req, res) => {
     uptime: Math.floor(process.uptime()),
     timestamp: new Date().toISOString()
   });
-});
-
-app.get('/health', (req, res) => {
-  res.status(200).json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
 // Global Error Handler

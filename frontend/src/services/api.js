@@ -6,7 +6,9 @@ import axios from 'axios';
    Base URL is read from the Vite environment variable
    VITE_API_URL defined in frontend/.env
    ═══════════════════════════════════════════════════════════════ */
-const API_BASE = import.meta.env.VITE_API_URL || '';
+const rawApiBase = (import.meta.env.VITE_API_URL || '').trim();
+// Normalize API base by trimming trailing slashes and accidental /api or /api/zakat suffixes
+const API_BASE = rawApiBase.replace(/\/api(\/zakat)?\/?$/, '').replace(/\/+$/, '');
 
 export const API = axios.create({
   baseURL: `${API_BASE}/api/zakat`,
